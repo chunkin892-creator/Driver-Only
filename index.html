@@ -8,133 +8,101 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; background: #0a0f1a; color: #e2e8f0; min-height: 100vh; overflow-x: hidden; }
-  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
-
-  .header { background: linear-gradient(135deg, #0f172a, #1e293b); padding: 16px; text-align: center; border-bottom: 1px solid #1e293b; }
-  .header h1 { font-size: 16px; font-weight: 700; color: #38bdf8; letter-spacing: 0.5px; }
-  .header .sub { font-size: 11px; color: #64748b; margin-top: 4px; }
-  .header .company { font-size: 13px; color: #94a3b8; font-weight: 600; }
-
-  .tab-bar { display: flex; background: #1e293b; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 50; overflow-x: auto; }
-  .tab-btn { flex: 0 0 auto; padding: 14px 16px; background: none; border: none; color: #64748b; font-size: 13px; font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
-  .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; background: #0f172a; }
-
-  .screen { display: none; flex: 1; padding: 16px; }
-  .screen.active { display: block; }
-
-  .btn { display: block; width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
-  .btn-primary { background: #0ea5e9; color: #fff; }
-  .btn-outline { background: transparent; border: 1px solid #334155; color: #94a3b8; }
-  .btn-success { background: #22c55e; color: #fff; }
-  .btn-danger { background: #ef4444; color: #fff; }
-  .btn-sm { padding: 10px 16px; font-size: 14px; border-radius: 8px; width: auto; display: inline-block; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .card { background: #1e293b; border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid #334155; }
-  .card-title { font-size: 14px; font-weight: 600; color: #94a3b8; margin-bottom: 8px; }
-
-  .welcome-card { background: linear-gradient(135deg, #052e16, #065f46); border: 2px solid #22c55e; border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 16px; }
-  .welcome-card .avatar { font-size: 48px; margin-bottom: 8px; }
-  .welcome-card .name { font-size: 22px; font-weight: 900; color: #4ade80; }
-  .welcome-card .phone { font-size: 13px; color: #86efac; margin-top: 4px; }
-  .welcome-card .datetime { font-size: 12px; color: #86efac; margin-top: 8px; opacity: 0.8; }
-
-  .quick-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .quick-stat { background: #1e293b; border-radius: 14px; padding: 16px; border: 1px solid #334155; text-align: center; }
-  .quick-stat .icon { font-size: 28px; margin-bottom: 6px; }
-  .quick-stat .num { font-size: 24px; font-weight: 900; color: #38bdf8; }
-  .quick-stat .lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
-
-  .module-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .module-card { background: #1e293b; border-radius: 14px; padding: 18px 12px; border: 1px solid #334155; text-align: center; cursor: pointer; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
-  .module-card:active { background: #334155; transform: scale(0.97); }
-  .module-card .icon { font-size: 32px; margin-bottom: 8px; }
-  .module-card .name { font-size: 14px; font-weight: 700; color: #f1f5f9; }
-  .module-card .desc { font-size: 11px; color: #64748b; margin-top: 4px; }
-  .module-card.attendance { border-top: 4px solid #7c3aed; }
-  .module-card.roster { border-top: 4px solid #2563eb; }
-  .module-card.salary { border-top: 4px solid #f59e0b; }
-  .module-card.stats { border-top: 4px solid #22c55e; }
-  .module-card.tracking { border-top: 4px solid #ec4899; }
-  .module-card.booking { border-top: 4px solid #14b8a6; }
-
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-green { background: #052e16; color: #4ade80; }
-  .badge-yellow { background: #422006; color: #fbbf24; }
-  .badge-red { background: #450a0a; color: #f87171; }
-  .badge-blue { background: #082f49; color: #38bdf8; }
-  .badge-orange { background: #431407; color: #fdba74; }
-  .badge-purple { background: #2e1065; color: #c4b5fd; }
-
-  .input-group { margin-bottom: 14px; }
-  .input-group label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; }
-  .input-group input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: #f1f5f9; font-size: 16px; outline: none; }
-  .input-group input:focus { border-color: #0ea5e9; }
-
-  .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
-  .login-card { background: #1e293b; border-radius: 18px; padding: 32px 24px; max-width: 380px; width: 100%; border: 1px solid #334155; }
-  .login-card h2 { font-size: 22px; font-weight: 800; color: #38bdf8; text-align: center; margin-bottom: 8px; }
-  .login-card .sub { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 24px; }
-
-  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #f1f5f9; padding: 12px 24px; border-radius: 10px; font-size: 14px; z-index: 9999; opacity: 0; transition: opacity 0.3s; border: 1px solid #334155; max-width: 90%; text-align: center; }
-  .toast.show { opacity: 1; }
-
-  .loading-box { text-align: center; padding: 60px 20px; color: #475569; }
-  .loading-box .spinner { width: 44px; height: 44px; border: 4px solid #334155; border-top-color: #38bdf8; border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .empty-box { text-align: center; padding: 40px 20px; color: #475569; }
-  .empty-box .icon { font-size: 48px; margin-bottom: 12px; }
-  .empty-box h3 { font-size: 15px; color: #94a3b8; margin-bottom: 6px; }
-  .empty-box p { font-size: 12px; line-height: 1.6; }
-
-  .list-item { background: #0f172a; border-radius: 12px; padding: 14px; margin-bottom: 10px; border-left: 4px solid #334155; }
-  .list-item.att-morning { border-left-color: #4ade80; }
-  .list-item.att-night { border-left-color: #a5b4fc; }
-  .list-item.att-rest { border-left-color: #64748b; }
-
-  .row-flex { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .row-flex .left { flex: 1; min-width: 0; }
-  .row-flex .right { flex-shrink: 0; text-align: right; }
-
-  .info-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid #1e293b; }
-  .info-row:last-child { border-bottom: none; }
-  .info-row .lbl { color: #94a3b8; }
-  .info-row .val { color: #f1f5f9; font-weight: 700; }
-  .info-row .val.green { color: #4ade80; }
-  .info-row .val.red { color: #f87171; }
-  .info-row .val.yellow { color: #fbbf24; }
-
-  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .kpi-card { background: #0f172a; border-radius: 12px; padding: 14px; border: 1px solid #334155; text-align: center; }
-  .kpi-card .lbl { font-size: 11px; color: #64748b; margin-bottom: 4px; }
-  .kpi-card .val { font-size: 20px; font-weight: 900; color: #38bdf8; }
-  .kpi-card.green .val { color: #4ade80; }
-  .kpi-card.yellow .val { color: #fbbf24; }
-  .kpi-card.purple .val { color: #c4b5fd; }
-
-  .month-picker { display: flex; gap: 8px; margin-bottom: 16px; }
-  .month-picker input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: #f1f5f9; font-size: 15px; outline: none; }
-
-  .section-subtitle { font-size: 13px; color: #94a3b8; margin: 16px 0 8px 0; font-weight: 700; }
-
-  .firebase-status { font-size: 11px; color: #64748b; text-align: center; padding: 8px; background: #1e293b; border-radius: 8px; margin-bottom: 12px; }
-  .firebase-status.ok { color: #22c55e; }
-  .firebase-status.err { color: #ef4444; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:#0a0f1a;color:#e2e8f0;min-height:100vh;overflow-x:hidden;}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+.header{background:linear-gradient(135deg,#0f172a,#1e293b);padding:16px;text-align:center;border-bottom:1px solid #1e293b;}
+.header h1{font-size:16px;font-weight:700;color:#38bdf8;}
+.header .sub{font-size:11px;color:#64748b;margin-top:4px;}
+.header .company{font-size:13px;color:#94a3b8;font-weight:600;}
+.tab-bar{display:flex;background:#1e293b;border-bottom:1px solid #334155;position:sticky;top:0;z-index:50;overflow-x:auto;}
+.tab-btn{flex:0 0 auto;padding:14px 16px;background:none;border:none;color:#64748b;font-size:13px;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+.tab-btn.active{color:#38bdf8;border-bottom-color:#38bdf8;background:#0f172a;}
+.screen{display:none;flex:1;padding:16px;}
+.screen.active{display:block;}
+.btn{display:block;width:100%;padding:16px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;text-align:center;}
+.btn-primary{background:#0ea5e9;color:#fff;}
+.btn-outline{background:transparent;border:1px solid #334155;color:#94a3b8;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.card{background:#1e293b;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid #334155;}
+.card-title{font-size:14px;font-weight:600;color:#94a3b8;margin-bottom:8px;}
+.welcome-card{background:linear-gradient(135deg,#052e16,#065f46);border:2px solid #22c55e;border-radius:14px;padding:20px;text-align:center;margin-bottom:16px;}
+.welcome-card .avatar{font-size:48px;margin-bottom:8px;}
+.welcome-card .name{font-size:22px;font-weight:900;color:#4ade80;}
+.welcome-card .phone{font-size:13px;color:#86efac;margin-top:4px;}
+.welcome-card .datetime{font-size:12px;color:#86efac;margin-top:8px;opacity:.8;}
+.quick-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.quick-stat{background:#1e293b;border-radius:14px;padding:16px;border:1px solid #334155;text-align:center;}
+.quick-stat .icon{font-size:28px;margin-bottom:6px;}
+.quick-stat .num{font-size:24px;font-weight:900;color:#38bdf8;}
+.quick-stat .lbl{font-size:11px;color:#64748b;margin-top:2px;}
+.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.module-card{background:#1e293b;border-radius:14px;padding:18px 12px;border:1px solid #334155;text-align:center;text-decoration:none;color:inherit;display:block;}
+.module-card:active{background:#334155;transform:scale(.97);}
+.module-card .icon{font-size:32px;margin-bottom:8px;}
+.module-card .name{font-size:14px;font-weight:700;color:#f1f5f9;}
+.module-card .desc{font-size:11px;color:#64748b;margin-top:4px;}
+.module-card.attendance{border-top:4px solid #7c3aed;}
+.module-card.roster{border-top:4px solid #2563eb;}
+.module-card.salary{border-top:4px solid #f59e0b;}
+.module-card.stats{border-top:4px solid #22c55e;}
+.module-card.tracking{border-top:4px solid #ec4899;}
+.module-card.booking{border-top:4px solid #14b8a6;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-red{background:#450a0a;color:#f87171;}
+.input-group{margin-bottom:14px;}
+.input-group label{display:block;font-size:13px;color:#94a3b8;margin-bottom:6px;}
+.input-group input{width:100%;padding:14px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:16px;outline:none;}
+.input-group input:focus{border-color:#0ea5e9;}
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+.login-card{background:#1e293b;border-radius:18px;padding:32px 24px;max-width:380px;width:100%;border:1px solid #334155;}
+.login-card h2{font-size:22px;font-weight:800;color:#38bdf8;text-align:center;margin-bottom:8px;}
+.login-card .sub{font-size:13px;color:#94a3b8;text-align:center;margin-bottom:24px;}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e293b;color:#f1f5f9;padding:12px 24px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity .3s;border:1px solid #334155;max-width:90%;text-align:center;}
+.toast.show{opacity:1;}
+.loading-box{text-align:center;padding:60px 20px;color:#475569;}
+.loading-box .spinner{width:44px;height:44px;border:4px solid #334155;border-top-color:#38bdf8;border-radius:50%;animation:spin .9s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-box{text-align:center;padding:40px 20px;color:#475569;}
+.empty-box .icon{font-size:48px;margin-bottom:12px;}
+.empty-box h3{font-size:15px;color:#94a3b8;margin-bottom:6px;}
+.empty-box p{font-size:12px;line-height:1.6;}
+.list-item{background:#0f172a;border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid #334155;}
+.list-item.att-morning{border-left-color:#4ade80;}
+.list-item.att-night{border-left-color:#a5b4fc;}
+.row-flex{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.row-flex .left{flex:1;min-width:0;}
+.row-flex .right{flex-shrink:0;text-align:right;}
+.info-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #1e293b;}
+.info-row:last-child{border-bottom:none;}
+.info-row .lbl{color:#94a3b8;}
+.info-row .val{color:#f1f5f9;font-weight:700;}
+.info-row .val.green{color:#4ade80;}
+.info-row .val.red{color:#f87171;}
+.info-row .val.yellow{color:#fbbf24;}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.kpi-card{background:#0f172a;border-radius:12px;padding:14px;border:1px solid #334155;text-align:center;}
+.kpi-card .lbl{font-size:11px;color:#64748b;margin-bottom:4px;}
+.kpi-card .val{font-size:20px;font-weight:900;color:#38bdf8;}
+.kpi-card.green .val{color:#4ade80;}
+.kpi-card.yellow .val{color:#fbbf24;}
+.kpi-card.purple .val{color:#c4b5fd;}
+.month-picker{display:flex;gap:8px;margin-bottom:16px;}
+.month-picker input{flex:1;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:15px;outline:none;}
+.section-subtitle{font-size:13px;color:#94a3b8;margin:16px 0 8px 0;font-weight:700;}
+.firebase-status{font-size:11px;color:#64748b;text-align:center;padding:8px;background:#1e293b;border-radius:8px;margin-bottom:12px;}
+.firebase-status.ok{color:#22c55e;}
+.firebase-status.err{color:#ef4444;}
 </style>
 </head>
 <body>
 
 <div class="app" id="app" style="display:none;">
-
   <div class="header">
     <div class="company">浚鍵管理有限公司</div>
     <h1>司機專用</h1>
     <div class="sub" id="header-sub">載入中...</div>
   </div>
-
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="home" onclick="switchTab('home')">🏠 首頁</button>
     <button class="tab-btn" data-tab="attendance" onclick="switchTab('attendance')">⏰ 考勤</button>
@@ -143,14 +111,12 @@
     <button class="tab-btn" data-tab="stats" onclick="switchTab('stats')">📊 統計</button>
     <button class="tab-btn" data-tab="tools" onclick="switchTab('tools')">🚐 工具</button>
   </div>
-
   <div class="screen active" id="screen-home"><div id="home-content"></div></div>
   <div class="screen" id="screen-attendance"><div id="attendance-content"></div></div>
   <div class="screen" id="screen-roster"><div id="roster-content"></div></div>
   <div class="screen" id="screen-salary"><div id="salary-content"></div></div>
   <div class="screen" id="screen-stats"><div id="stats-content"></div></div>
   <div class="screen" id="screen-tools"><div id="tools-content"></div></div>
-
   <div class="toast" id="toast"></div>
 </div>
 
@@ -163,22 +129,11 @@
       <input type="tel" id="login-phone" placeholder="例如：91234567" maxlength="8" inputmode="numeric">
     </div>
     <button class="btn btn-primary" id="login-btn" onclick="driverLogin()">🔐 登入</button>
-    <div style="font-size:12px;color:#64748b;text-align:center;margin-top:14px;line-height:1.6;">
-      只限已登記司機使用<br>
-      如有問題請聯絡管理員
-    </div>
+    <div style="font-size:12px;color:#64748b;text-align:center;margin-top:14px;line-height:1.6;">只限已登記司機使用<br>如有問題請聯絡管理員</div>
   </div>
 </div>
 
 <script>
-// ============================================================
-// 浚鍵管理有限公司 · 司機專用 Dashboard
-// 雙 Firebase 專案：
-//   - 專案 A（triple-login-version）：司機白名單
-//   - 專案 B（driver-s-shift-report）：考勤、更表、糧單、行車收入
-// ============================================================
-
-// 專案 A：司機白名單
 const firebaseConfigA = {
   apiKey: "AIzaSyAX7Zy5br1ozGOGxHvDeFNY-Ldcjjw8Qgc",
   authDomain: "triple-login-version.firebaseapp.com",
@@ -188,8 +143,6 @@ const firebaseConfigA = {
   messagingSenderId: "66459706459",
   appId: "1:66459706459:web:28f99a455652f393da0b7e"
 };
-
-// 專案 B：公司營運數據
 const firebaseConfigB = {
   apiKey: "AIzaSyANWLqV5bIFfMX_-byunnEBQ-gZmSn1cj4",
   authDomain: "driver-s-shift-report.firebaseapp.com",
@@ -200,49 +153,26 @@ const firebaseConfigB = {
   appId: "1:790331468274:web:a0cecd6a8d5f8e157ba36b"
 };
 
-// 初始化兩個 Firebase App
-let appA, appB, dbA, dbB;
+let appA, appB, dbA, dbB, authA;
 try {
   appA = firebase.initializeApp(firebaseConfigA, 'appA');
   dbA = firebase.database(appA);
-  console.log('✅ 專案 A（司機白名單）已初始化');
-} catch(e) {
-  console.error('❌ 專案 A 初始化失敗：', e);
-}
+  authA = firebase.auth(appA);
+  console.log('✅ [Init] 專案 A 已初始化');
+} catch(e) { console.error('❌ [Init] 專案 A 失敗：', e); }
 try {
   appB = firebase.initializeApp(firebaseConfigB, 'appB');
   dbB = firebase.database(appB);
-  console.log('✅ 專案 B（公司營運數據）已初始化');
-} catch(e) {
-  console.error('❌ 專案 B 初始化失敗：', e);
-}
+  console.log('✅ [Init] 專案 B 已初始化');
+} catch(e) { console.error('❌ [Init] 專案 B 失敗：', e); }
 
-const COMPANY = '浚鍵管理有限公司';
-
-// ============================================================
-// 全域狀態
-// ============================================================
-
-let currentDriver = null; // { identifier, name }
+let currentDriver = null;
 let currentTab = 'home';
-let activeListeners = []; // 實時 listener 記錄，切換 tab 時清除
+let activeListeners = [];
 
-function saveDriverSession(driver) {
-  try { localStorage.setItem('driver_session', JSON.stringify(driver)); } catch(e) {}
-}
-function loadDriverSession() {
-  try {
-    const raw = localStorage.getItem('driver_session');
-    return raw ? JSON.parse(raw) : null;
-  } catch(e) { return null; }
-}
-function clearDriverSession() {
-  try { localStorage.removeItem('driver_session'); } catch(e) {}
-}
-
-// ============================================================
-// 工具函數
-// ============================================================
+function saveDriverSession(d) { try { localStorage.setItem('driver_session', JSON.stringify(d)); } catch(e) {} }
+function loadDriverSession() { try { const r = localStorage.getItem('driver_session'); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
+function clearDriverSession() { try { localStorage.removeItem('driver_session'); } catch(e) {} }
 
 function toast(msg, duration = 3000) {
   const el = document.getElementById('toast');
@@ -251,71 +181,61 @@ function toast(msg, duration = 3000) {
   clearTimeout(el._tm);
   el._tm = setTimeout(() => el.classList.remove('show'), duration);
 }
-
 function esc(s) {
   if (s == null) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
-function now() { return Date.now(); }
-
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
-function thisMonthStr() {
-  return todayStr().substring(0, 7);
-}
+function thisMonthStr() { return todayStr().substring(0, 7); }
 function nextMonthStr() {
   const d = new Date();
   d.setMonth(d.getMonth() + 1);
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
-function lastDayOfMonth(monthStr) {
-  const [y, m] = monthStr.split('-').map(Number);
-  return new Date(y, m, 0).getDate();
-}
-function formatDateTime(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  return d.toLocaleString('zh-HK', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+function lastDayOfMonth(m) {
+  const [y, mm] = m.split('-').map(Number);
+  return new Date(y, mm, 0).getDate();
 }
 function formatTime() {
   const d = new Date();
   return d.toLocaleString('zh-HK', { year:'numeric', month:'2-digit', day:'2-digit', weekday:'long', hour:'2-digit', minute:'2-digit' });
 }
-
 function fmtMoney(n) {
   return 'HK$ ' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// ============================================================
-// 登入 / 登出
-// ============================================================
+// 確保有 Firebase Auth（匿名登入）
+async function ensureAuthA() {
+  if (authA.currentUser) return authA.currentUser;
+  console.log('🔐 [Auth] 進行匿名登入...');
+  const result = await authA.signInAnonymously();
+  console.log('✅ [Auth] 匿名登入成功 uid=' + result.user.uid);
+  return result.user;
+}
 
 async function driverLogin() {
   const btn = document.getElementById('login-btn');
   const phone = document.getElementById('login-phone').value.trim();
-
-  if (!/^\d{8}$/.test(phone)) {
-    toast('請輸入 8 位數字手機號碼');
-    return;
-  }
-
+  if (!/^\d{8}$/.test(phone)) { toast('請輸入 8 位數字手機號碼'); return; }
   btn.disabled = true;
   btn.textContent = '驗證中...';
 
   try {
-    // 喺專案 A 嘅 drivers 節點搵呢個手機號碼
+    await ensureAuthA();
+
+    console.log('🔍 [查詢] 查 /drivers identifier=' + phone);
     const snap = await dbA.ref('drivers').orderByChild('identifier').equalTo(phone).once('value');
+    console.log('📊 [查詢] 結果 exists=' + snap.exists());
+
     if (!snap.exists()) {
       toast('❌ 此手機號碼未登記為司機');
       btn.disabled = false;
       btn.textContent = '🔐 登入';
       return;
     }
-
-    // 攞司機資料
     let driverData = null;
     snap.forEach(c => { driverData = { key: c.key, ...c.val() }; });
 
@@ -328,7 +248,7 @@ async function driverLogin() {
     toast('✅ 登入成功');
     showDashboard();
   } catch(e) {
-    console.error('登入失敗：', e);
+    console.error('❌ [Login] 登入失敗：', e);
     toast('❌ 登入失敗：' + e.message);
     btn.disabled = false;
     btn.textContent = '🔐 登入';
@@ -340,6 +260,7 @@ function driverLogout() {
   clearDriverSession();
   currentDriver = null;
   clearAllListeners();
+  if (authA.currentUser) authA.signOut().catch(()=>{});
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('login-phone').value = '';
@@ -350,21 +271,13 @@ function driverLogout() {
 function showDashboard() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  document.getElementById('header-sub').textContent = `歡迎，${currentDriver.name}`;
-
-  // 首頁
+  document.getElementById('header-sub').textContent = '歡迎，' + currentDriver.name;
   switchTab('home');
-
-  // 定時更新首頁時間
   setInterval(() => {
     const el = document.getElementById('welcome-datetime');
     if (el) el.textContent = formatTime();
   }, 30000);
 }
-
-// ============================================================
-// Tab 切換
-// ============================================================
 
 function clearAllListeners() {
   activeListeners.forEach(({ ref, handler }) => {
@@ -372,21 +285,14 @@ function clearAllListeners() {
   });
   activeListeners = [];
 }
-
-function registerListener(ref, handler) {
-  activeListeners.push({ ref, handler });
-}
+function registerListener(ref, handler) { activeListeners.push({ ref, handler }); }
 
 function switchTab(tab) {
   currentTab = tab;
   clearAllListeners();
-
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === tab);
-  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + tab).classList.add('active');
-
   if (tab === 'home') renderHome();
   else if (tab === 'attendance') renderAttendance();
   else if (tab === 'roster') renderRoster();
@@ -396,12 +302,10 @@ function switchTab(tab) {
 }
 
 // ============================================================
-// Tab 1：首頁
+// 首頁
 // ============================================================
-
-async function renderHome() {
+function renderHome() {
   const content = document.getElementById('home-content');
-
   content.innerHTML = `
     <div class="welcome-card">
       <div class="avatar">🧑‍✈️</div>
@@ -409,51 +313,21 @@ async function renderHome() {
       <div class="phone">${esc(currentDriver.identifier)}</div>
       <div class="datetime" id="welcome-datetime">${esc(formatTime())}</div>
     </div>
-
     <div id="home-quick-stats"></div>
-
     <div class="section-subtitle">📊 我的數據</div>
     <div class="module-grid">
-      <div class="module-card attendance" onclick="switchTab('attendance')">
-        <div class="icon">⏰</div>
-        <div class="name">我的考勤</div>
-        <div class="desc">報到 · 簽退 · 工時</div>
-      </div>
-      <div class="module-card roster" onclick="switchTab('roster')">
-        <div class="icon">📅</div>
-        <div class="name">我的更表</div>
-        <div class="desc">下月更表安排</div>
-      </div>
-      <div class="module-card salary" onclick="switchTab('salary')">
-        <div class="icon">💰</div>
-        <div class="name">我的糧單</div>
-        <div class="desc">本月薪酬明細</div>
-      </div>
-      <div class="module-card stats" onclick="switchTab('stats')">
-        <div class="icon">📊</div>
-        <div class="name">我的統計</div>
-        <div class="desc">工時 · 收入統計</div>
-      </div>
+      <div class="module-card attendance" onclick="switchTab('attendance')"><div class="icon">⏰</div><div class="name">我的考勤</div><div class="desc">報到 · 簽退 · 工時</div></div>
+      <div class="module-card roster" onclick="switchTab('roster')"><div class="icon">📅</div><div class="name">我的更表</div><div class="desc">下月更表安排</div></div>
+      <div class="module-card salary" onclick="switchTab('salary')"><div class="icon">💰</div><div class="name">我的糧單</div><div class="desc">本月薪酬明細</div></div>
+      <div class="module-card stats" onclick="switchTab('stats')"><div class="icon">📊</div><div class="name">我的統計</div><div class="desc">工時 · 收入統計</div></div>
     </div>
-
     <div class="section-subtitle">🚐 工作工具</div>
     <div class="module-grid">
-      <a class="module-card tracking" href="index%20(9).html" target="_blank">
-        <div class="icon">📡</div>
-        <div class="name">小巴追蹤</div>
-        <div class="desc">GPS 報站 · 對講機</div>
-      </a>
-      <a class="module-card booking" href="booking.html" target="_blank">
-        <div class="icon">🎫</div>
-        <div class="name">留座名單</div>
-        <div class="desc">確認乘客預約</div>
-      </a>
+      <a class="module-card tracking" href="index%20(9).html" target="_blank"><div class="icon">📡</div><div class="name">小巴追蹤</div><div class="desc">GPS 報站 · 對講機</div></a>
+      <a class="module-card booking" href="booking.html" target="_blank"><div class="icon">🎫</div><div class="name">留座名單</div><div class="desc">確認乘客預約</div></a>
     </div>
-
     <button class="btn btn-outline" style="margin-top:20px;" onclick="driverLogout()">🚪 登出</button>
   `;
-
-  // 載入實時統計
   loadHomeQuickStats();
 }
 
@@ -465,198 +339,90 @@ function loadHomeQuickStats() {
   const today = todayStr();
   const thisMonth = thisMonthStr();
 
-  // 監聽今日考勤
   const attRef = dbB.ref('attendance/' + today);
   const attHandler = (snap) => {
     const day = snap.val() || {};
-    let todayHours = 0;
-    let todayStatus = '未報到';
-
-    Object.entries(day).forEach(([key, r]) => {
+    let todayHours = 0, todayStatus = '未報到';
+    Object.values(day).forEach(r => {
       if (r.driverName !== currentDriver.name) return;
       todayHours += r.hours || 0;
       if (r.checkIn && !r.checkOut) todayStatus = '工作中';
       else if (r.checkIn && r.checkOut) todayStatus = '已簽退';
     });
-
     const statusColor = todayStatus === '工作中' ? '#fbbf24' : todayStatus === '已簽退' ? '#4ade80' : '#64748b';
-
     statsEl.innerHTML = `
       <div class="quick-stats">
-        <div class="quick-stat">
-          <div class="icon">⏰</div>
-          <div class="num" style="color:${statusColor}; font-size:16px;">${esc(todayStatus)}</div>
-          <div class="lbl">今日狀態</div>
-        </div>
-        <div class="quick-stat">
-          <div class="icon">🕐</div>
-          <div class="num">${todayHours.toFixed(1)}</div>
-          <div class="lbl">今日工時 (h)</div>
-        </div>
+        <div class="quick-stat"><div class="icon">⏰</div><div class="num" style="color:${statusColor};font-size:16px;">${esc(todayStatus)}</div><div class="lbl">今日狀態</div></div>
+        <div class="quick-stat"><div class="icon">🕐</div><div class="num">${todayHours.toFixed(1)}</div><div class="lbl">今日工時 (h)</div></div>
       </div>
     `;
   };
   attRef.on('value', attHandler);
   registerListener(attRef, attHandler);
 
-  // 監聽本月財務（糧單）
   const finRef = dbB.ref('finance/' + thisMonth);
   const finHandler = (snap) => {
     const data = snap.val() || {};
     const payroll = (data.payrollList || []).filter(p => p.name === currentDriver.name);
     let totalNet = 0;
     payroll.forEach(p => { totalNet += Number(p.net || 0); });
-
-    const salaryEl = document.getElementById('home-salary-stat');
-    // 喺 quick-stats 後面加多一個 card
     const existing = document.getElementById('home-month-salary');
-    const html = `
-      <div class="quick-stat" id="home-month-salary" style="margin-bottom:12px;">
-        <div class="icon">💰</div>
-        <div class="num" style="color:#fbbf24;">${fmtMoney(totalNet)}</div>
-        <div class="lbl">本月糧單累計</div>
-      </div>
-    `;
-    if (existing) {
-      existing.outerHTML = html;
-    } else {
-      statsEl.insertAdjacentHTML('beforeend', html);
-    }
+    const html = `<div class="quick-stat" id="home-month-salary" style="margin-bottom:12px;"><div class="icon">💰</div><div class="num" style="color:#fbbf24;">${fmtMoney(totalNet)}</div><div class="lbl">本月糧單累計</div></div>`;
+    if (existing) existing.outerHTML = html;
+    else statsEl.insertAdjacentHTML('beforeend', html);
   };
   finRef.on('value', finHandler);
   registerListener(finRef, finHandler);
 }
 
 // ============================================================
-// 初始化
+// 考勤
 // ============================================================
-
-(async function init() {
-  console.log('🚐 浚鍵管理有限公司 · 司機專用 Dashboard 啟動');
-
-  // 檢查 Firebase 連線
-  if (!dbA || !dbB) {
-    document.getElementById('loginScreen').innerHTML = `
-      <div class="login-card">
-        <h2 style="color:#ef4444;">⚠️ 系統錯誤</h2>
-        <p style="color:#94a3b8;text-align:center;">Firebase 初始化失敗，請重新載入頁面。</p>
-      </div>
-    `;
-    return;
-  }
-
-  // 檢查有冇上次登入
-  currentDriver = loadDriverSession();
-  if (currentDriver) {
-    // 驗證仍然有效
-    try {
-      const snap = await dbA.ref('drivers').orderByChild('identifier').equalTo(currentDriver.identifier).once('value');
-      if (snap.exists()) {
-        showDashboard();
-        return;
-      }
-    } catch(e) {
-      console.warn('驗證失敗：', e);
-    }
-    clearDriverSession();
-    currentDriver = null;
-  }
-
-  // 未登入，顯示登入畫面
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-
-  // Enter 送出
-  document.getElementById('login-phone').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') driverLogin();
-  });
-})();
-</script>// ============================================================
-// Tab 2：我的考勤
-// ============================================================
-
 function renderAttendance() {
   const content = document.getElementById('attendance-content');
   const today = todayStr();
   const thisMonth = thisMonthStr();
-
   content.innerHTML = `
     <div class="card">
       <div class="card-title">📅 今日考勤（${esc(today)}）</div>
       <div id="att-today"></div>
     </div>
-
     <div class="card">
       <div class="card-title">📆 本月考勤記錄</div>
-      <div class="month-picker">
-        <input type="month" id="att-month-picker" value="${esc(thisMonth)}">
-      </div>
+      <div class="month-picker"><input type="month" id="att-month-picker"></div>
       <div id="att-list"></div>
     </div>
   `;
+  document.getElementById('att-month-picker').value = thisMonth;
 
-  // 監聽今日考勤（實時）
   const todayRef = dbB.ref('attendance/' + today);
   const todayHandler = (snap) => {
     const day = snap.val() || {};
     const myRecords = [];
     Object.entries(day).forEach(([key, r]) => {
-      if (r.driverName === currentDriver.name) {
-        myRecords.push({ key, ...r });
-      }
+      if (r.driverName === currentDriver.name) myRecords.push({ key, ...r });
     });
-
     const el = document.getElementById('att-today');
     if (!el) return;
-
     if (myRecords.length === 0) {
-      el.innerHTML = `
-        <div class="empty-box" style="padding:20px;">
-          <div class="icon">⏰</div>
-          <h3>今日暫無考勤記錄</h3>
-          <p>請喺「即時考勤」系統報到</p>
-        </div>
-      `;
+      el.innerHTML = `<div class="empty-box" style="padding:20px;"><div class="icon">⏰</div><h3>今日暫無考勤記錄</h3><p>請喺「即時考勤」系統報到</p></div>`;
       return;
     }
-
     let html = '';
     myRecords.forEach(r => {
-      const isMorning = r.shift === '早更';
-      const cls = isMorning ? 'att-morning' : 'att-night';
-      const status = !r.checkIn ? '未報到' :
-                     !r.checkOut ? '工作中' :
-                     '已簽退';
-      const statusColor = status === '工作中' ? '#fbbf24' :
-                          status === '已簽退' ? '#4ade80' :
-                          '#64748b';
-
+      const cls = r.shift === '早更' ? 'att-morning' : 'att-night';
+      const status = !r.checkIn ? '未報到' : !r.checkOut ? '工作中' : '已簽退';
+      const statusColor = status === '工作中' ? '#fbbf24' : status === '已簽退' ? '#4ade80' : '#64748b';
       html += `
         <div class="list-item ${cls}">
           <div class="row-flex" style="margin-bottom:8px;">
-            <div class="left">
-              <div style="font-size:15px;font-weight:700;color:#f1f5f9;">${esc(r.shift || '未指定')}</div>
-            </div>
-            <div class="right">
-              <span style="font-size:13px;font-weight:700;color:${statusColor};">${status}</span>
-            </div>
+            <div class="left"><div style="font-size:15px;font-weight:700;color:#f1f5f9;">${esc(r.shift || '未指定')}</div></div>
+            <div class="right"><span style="font-size:13px;font-weight:700;color:${statusColor};">${status}</span></div>
           </div>
-          <div class="info-row">
-            <span class="lbl">報到時間</span>
-            <span class="val">${esc(r.checkIn || '-')}</span>
-          </div>
-          <div class="info-row">
-            <span class="lbl">簽退時間</span>
-            <span class="val">${esc(r.checkOut || '-')}</span>
-          </div>
-          <div class="info-row">
-            <span class="lbl">工時</span>
-            <span class="val green">${r.hours ? r.hours.toFixed(1) + ' 小時' : '-'}</span>
-          </div>
-          <div class="info-row">
-            <span class="lbl">人工</span>
-            <span class="val green">${r.salary ? fmtMoney(r.salary) : '-'}</span>
-          </div>
+          <div class="info-row"><span class="lbl">報到時間</span><span class="val">${esc(r.checkIn || '-')}</span></div>
+          <div class="info-row"><span class="lbl">簽退時間</span><span class="val">${esc(r.checkOut || '-')}</span></div>
+          <div class="info-row"><span class="lbl">工時</span><span class="val green">${r.hours ? r.hours.toFixed(1) + ' 小時' : '-'}</span></div>
+          <div class="info-row"><span class="lbl">人工</span><span class="val green">${r.salary ? fmtMoney(r.salary) : '-'}</span></div>
         </div>
       `;
     });
@@ -665,27 +431,17 @@ function renderAttendance() {
   todayRef.on('value', todayHandler);
   registerListener(todayRef, todayHandler);
 
-  // 監聽本月考勤（實時）
-  const monthPicker = document.getElementById('att-month-picker');
-  monthPicker.addEventListener('change', () => loadMonthAttendance(monthPicker.value));
+  const picker = document.getElementById('att-month-picker');
+  picker.addEventListener('change', () => loadMonthAttendance(picker.value));
   loadMonthAttendance(thisMonth);
 }
 
-let attMonthRef = null;
-let attMonthHandler = null;
-
+let attMonthRef = null, attMonthHandler = null;
 function loadMonthAttendance(monthStr) {
-  // 清除舊 listener
-  if (attMonthRef && attMonthHandler) {
-    try { attMonthRef.off('value', attMonthHandler); } catch(e) {}
-    attMonthRef = null;
-    attMonthHandler = null;
-  }
-
+  if (attMonthRef && attMonthHandler) { try { attMonthRef.off('value', attMonthHandler); } catch(e) {} attMonthRef = null; attMonthHandler = null; }
   const listEl = document.getElementById('att-list');
   if (listEl) listEl.innerHTML = `<div class="loading-box"><div class="spinner"></div><div>載入中...</div></div>`;
 
-  // 用 orderByKey + startAt/endAt 攞整月
   const last = lastDayOfMonth(monthStr);
   const startKey = monthStr + '-01';
   const endKey = monthStr + '-' + String(last).padStart(2, '0');
@@ -696,52 +452,27 @@ function loadMonthAttendance(monthStr) {
     const myRecords = [];
     Object.entries(all).forEach(([date, day]) => {
       Object.entries(day).forEach(([key, r]) => {
-        if (r.driverName === currentDriver.name) {
-          myRecords.push({ date, key, ...r });
-        }
+        if (r.driverName === currentDriver.name) myRecords.push({ date, key, ...r });
       });
     });
-
     myRecords.sort((a, b) => b.date.localeCompare(a.date));
-
     const el = document.getElementById('att-list');
     if (!el) return;
-
     if (myRecords.length === 0) {
-      el.innerHTML = `
-        <div class="empty-box">
-          <div class="icon">📭</div>
-          <h3>本月暫無考勤記錄</h3>
-          <p>${esc(monthStr)}</p>
-        </div>
-      `;
+      el.innerHTML = `<div class="empty-box"><div class="icon">📭</div><h3>本月暫無考勤記錄</h3><p>${esc(monthStr)}</p></div>`;
       return;
     }
-
-    // 統計
     let totalHours = 0, totalSalary = 0;
-    myRecords.forEach(r => {
-      totalHours += r.hours || 0;
-      totalSalary += r.salary || 0;
-    });
-
+    myRecords.forEach(r => { totalHours += r.hours || 0; totalSalary += r.salary || 0; });
     let html = `
       <div class="kpi-grid">
-        <div class="kpi-card green">
-          <div class="lbl">總工時</div>
-          <div class="val">${totalHours.toFixed(1)} h</div>
-        </div>
-        <div class="kpi-card yellow">
-          <div class="lbl">總人工</div>
-          <div class="val">${fmtMoney(totalSalary)}</div>
-        </div>
+        <div class="kpi-card green"><div class="lbl">總工時</div><div class="val">${totalHours.toFixed(1)} h</div></div>
+        <div class="kpi-card yellow"><div class="lbl">總人工</div><div class="val">${fmtMoney(totalSalary)}</div></div>
       </div>
       <div class="section-subtitle">📋 逐日記錄（${myRecords.length} 筆）</div>
     `;
-
     myRecords.forEach(r => {
-      const isMorning = r.shift === '早更';
-      const cls = isMorning ? 'att-morning' : 'att-night';
+      const cls = r.shift === '早更' ? 'att-morning' : 'att-night';
       html += `
         <div class="list-item ${cls}">
           <div class="row-flex" style="margin-bottom:8px;">
@@ -754,174 +485,91 @@ function loadMonthAttendance(monthStr) {
               <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${r.salary ? fmtMoney(r.salary) : '-'}</div>
             </div>
           </div>
-          <div class="info-row">
-            <span class="lbl">報到 / 簽退</span>
-            <span class="val">${esc(r.checkIn || '-')} / ${esc(r.checkOut || '-')}</span>
-          </div>
+          <div class="info-row"><span class="lbl">報到 / 簽退</span><span class="val">${esc(r.checkIn || '-')} / ${esc(r.checkOut || '-')}</span></div>
         </div>
       `;
     });
-
     el.innerHTML = html;
   };
   ref.on('value', handler);
-  attMonthRef = ref;
-  attMonthHandler = handler;
+  attMonthRef = ref; attMonthHandler = handler;
   registerListener(ref, handler);
 }
 
 // ============================================================
-// Tab 3：我的更表
+// 更表
 // ============================================================
-
 function renderRoster() {
   const content = document.getElementById('roster-content');
   const nextMonth = nextMonthStr();
-  const thisMonth = thisMonthStr();
-
   content.innerHTML = `
     <div class="card">
       <div class="card-title">📅 選擇月份</div>
-      <div class="month-picker">
-        <input type="month" id="roster-month-picker" value="${esc(nextMonth)}">
-      </div>
-      <div style="font-size:12px;color:#94a3b8;margin-top:6px;line-height:1.6;">
-        提示：更表一般喺月底前公佈下個月安排
-      </div>
+      <div class="month-picker"><input type="month" id="roster-month-picker"></div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:6px;line-height:1.6;">提示：更表一般喺月底前公佈下個月安排</div>
     </div>
-
     <div id="roster-list"></div>
   `;
-
+  document.getElementById('roster-month-picker').value = nextMonth;
   const picker = document.getElementById('roster-month-picker');
   picker.addEventListener('change', () => loadRoster(picker.value));
   loadRoster(nextMonth);
 }
 
-let rosterRef = null;
-let rosterHandler = null;
-
+let rosterRef = null, rosterHandler = null;
 function loadRoster(monthStr) {
-  // 清除舊 listener
-  if (rosterRef && rosterHandler) {
-    try { rosterRef.off('value', rosterHandler); } catch(e) {}
-    rosterRef = null;
-    rosterHandler = null;
-  }
-
+  if (rosterRef && rosterHandler) { try { rosterRef.off('value', rosterHandler); } catch(e) {} rosterRef = null; rosterHandler = null; }
   const listEl = document.getElementById('roster-list');
   if (listEl) listEl.innerHTML = `<div class="loading-box"><div class="spinner"></div><div>載入中...</div></div>`;
 
   const ref = dbB.ref('rosters/' + monthStr);
   const handler = (snap) => {
     const roster = snap.val();
-
     const el = document.getElementById('roster-list');
     if (!el) return;
-
     if (!roster) {
-      el.innerHTML = `
-        <div class="empty-box">
-          <div class="icon">📭</div>
-          <h3>暫無更表</h3>
-          <p>${esc(monthStr)} 未公佈更表</p>
-        </div>
-      `;
+      el.innerHTML = `<div class="empty-box"><div class="icon">📭</div><h3>暫無更表</h3><p>${esc(monthStr)} 未公佈更表</p></div>`;
       return;
     }
-
-    // roster 係 array（每日一個 object）
     const days = Array.isArray(roster) ? roster : Object.values(roster);
-
-    // 篩選有自己嘅日子
     const myDays = days.filter(d => {
       if (!d) return false;
-      const mDriver = (d.mDriver || '').trim();
-      const nDriver = (d.nDriver || '').trim();
-      return mDriver === currentDriver.name || nDriver === currentDriver.name;
+      const m = (d.mDriver || '').trim();
+      const n = (d.nDriver || '').trim();
+      return m === currentDriver.name || n === currentDriver.name;
     });
-
     if (myDays.length === 0) {
-      el.innerHTML = `
-        <div class="empty-box">
-          <div class="icon">🌴</div>
-          <h3>本月暫無排更</h3>
-          <p>${esc(monthStr)} 未安排你嘅更份</p>
-        </div>
-      `;
+      el.innerHTML = `<div class="empty-box"><div class="icon">🌴</div><h3>本月暫無排更</h3><p>${esc(monthStr)} 未安排你嘅更份</p></div>`;
       return;
     }
-
-    // 統計
     let morningCount = 0, nightCount = 0, totalHours = 0;
     myDays.forEach(d => {
-      const mDriver = (d.mDriver || '').trim();
-      const nDriver = (d.nDriver || '').trim();
-      if (mDriver === currentDriver.name && (d.mHours || 0) > 0) {
-        morningCount++;
-        totalHours += Number(d.mHours) || 0;
-      }
-      if (nDriver === currentDriver.name && (d.nHours || 0) > 0) {
-        nightCount++;
-        totalHours += Number(d.nHours) || 0;
-      }
+      const m = (d.mDriver || '').trim();
+      const n = (d.nDriver || '').trim();
+      if (m === currentDriver.name && (d.mHours || 0) > 0) { morningCount++; totalHours += Number(d.mHours) || 0; }
+      if (n === currentDriver.name && (d.nHours || 0) > 0) { nightCount++; totalHours += Number(d.nHours) || 0; }
     });
-
     let html = `
       <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="lbl">早更日數</div>
-          <div class="val">${morningCount} 日</div>
-        </div>
-        <div class="kpi-card purple">
-          <div class="lbl">夜更日數</div>
-          <div class="val">${nightCount} 日</div>
-        </div>
+        <div class="kpi-card"><div class="lbl">早更日數</div><div class="val">${morningCount} 日</div></div>
+        <div class="kpi-card purple"><div class="lbl">夜更日數</div><div class="val">${nightCount} 日</div></div>
       </div>
       <div class="kpi-grid">
-        <div class="kpi-card green">
-          <div class="lbl">本月預計工時</div>
-          <div class="val">${totalHours.toFixed(1)} h</div>
-        </div>
-        <div class="kpi-card yellow">
-          <div class="lbl">排更總日數</div>
-          <div class="val">${myDays.length} 日</div>
-        </div>
+        <div class="kpi-card green"><div class="lbl">本月預計工時</div><div class="val">${totalHours.toFixed(1)} h</div></div>
+        <div class="kpi-card yellow"><div class="lbl">排更總日數</div><div class="val">${myDays.length} 日</div></div>
       </div>
-
       <div class="section-subtitle">📋 逐日更表</div>
     `;
-
     myDays.sort((a, b) => (a.dayNum || 0) - (b.dayNum || 0));
-
     myDays.forEach(d => {
-      const mDriver = (d.mDriver || '').trim();
-      const nDriver = (d.nDriver || '').trim();
-      const isMorning = mDriver === currentDriver.name && (d.mHours || 0) > 0;
-      const isNight = nDriver === currentDriver.name && (d.nHours || 0) > 0;
-
-      let shifts = [];
-      if (isMorning) {
-        shifts.push({
-          type: '早更',
-          time: d.mTime || '',
-          hours: d.mHours || 0,
-          cls: 'att-morning'
-        });
-      }
-      if (isNight) {
-        shifts.push({
-          type: '夜更',
-          time: d.nTime || '',
-          hours: d.nHours || 0,
-          cls: 'att-night'
-        });
-      }
-
-      const dayLabel = d.isHoliday
-        ? `<span class="badge badge-red">${esc(d.holidayName || '假期')}</span>`
-        : '';
-
+      const m = (d.mDriver || '').trim();
+      const n = (d.nDriver || '').trim();
+      const isMorning = m === currentDriver.name && (d.mHours || 0) > 0;
+      const isNight = n === currentDriver.name && (d.nHours || 0) > 0;
+      const shifts = [];
+      if (isMorning) shifts.push({ type: '早更', time: d.mTime || '', hours: d.mHours || 0, cls: 'att-morning' });
+      if (isNight) shifts.push({ type: '夜更', time: d.nTime || '', hours: d.nHours || 0, cls: 'att-night' });
+      const dayLabel = d.isHoliday ? `<span class="badge badge-red">${esc(d.holidayName || '假期')}</span>` : '';
       shifts.forEach(sh => {
         html += `
           <div class="list-item ${sh.cls}">
@@ -930,66 +578,44 @@ function loadRoster(monthStr) {
                 <div style="font-size:15px;font-weight:700;color:#f1f5f9;">${d.dayNum || '?'} 號 · ${esc(sh.type)}</div>
                 <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${esc(d.weekDayStr || '')}</div>
               </div>
-              <div class="right">
-                ${dayLabel}
-              </div>
+              <div class="right">${dayLabel}</div>
             </div>
-            <div class="info-row">
-              <span class="lbl">時間</span>
-              <span class="val">${esc(sh.time)}</span>
-            </div>
-            <div class="info-row">
-              <span class="lbl">工時</span>
-              <span class="val green">${sh.hours} 小時</span>
-            </div>
+            <div class="info-row"><span class="lbl">時間</span><span class="val">${esc(sh.time)}</span></div>
+            <div class="info-row"><span class="lbl">工時</span><span class="val green">${sh.hours} 小時</span></div>
           </div>
         `;
       });
     });
-
     el.innerHTML = html;
   };
   ref.on('value', handler);
-  rosterRef = ref;
-  rosterHandler = handler;
+  rosterRef = ref; rosterHandler = handler;
   registerListener(ref, handler);
-}// ============================================================
-// Tab 4：我的糧單
-// ============================================================
+}
 
+// ============================================================
+// 糧單
+// ============================================================
 function renderSalary() {
   const content = document.getElementById('salary-content');
   const thisMonth = thisMonthStr();
-
   content.innerHTML = `
     <div class="card">
       <div class="card-title">💰 我的糧單</div>
-      <div class="month-picker">
-        <input type="month" id="salary-month-picker" value="${esc(thisMonth)}">
-      </div>
-      <div style="font-size:12px;color:#94a3b8;margin-top:6px;line-height:1.6;">
-        糧單由秘書核對後發佈，如有疑問請聯絡秘書
-      </div>
+      <div class="month-picker"><input type="month" id="salary-month-picker"></div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:6px;line-height:1.6;">糧單由秘書核對後發佈，如有疑問請聯絡秘書</div>
     </div>
-
     <div id="salary-detail"></div>
   `;
-
+  document.getElementById('salary-month-picker').value = thisMonth;
   const picker = document.getElementById('salary-month-picker');
   picker.addEventListener('change', () => loadSalary(picker.value));
   loadSalary(thisMonth);
 }
 
-let salaryRef = null;
-let salaryHandler = null;
-
+let salaryRef = null, salaryHandler = null;
 function loadSalary(monthStr) {
-  if (salaryRef && salaryHandler) {
-    try { salaryRef.off('value', salaryHandler); } catch(e) {}
-    salaryRef = null;
-    salaryHandler = null;
-  }
-
+  if (salaryRef && salaryHandler) { try { salaryRef.off('value', salaryHandler); } catch(e) {} salaryRef = null; salaryHandler = null; }
   const detailEl = document.getElementById('salary-detail');
   if (detailEl) detailEl.innerHTML = `<div class="loading-box"><div class="spinner"></div><div>載入中...</div></div>`;
 
@@ -997,25 +623,14 @@ function loadSalary(monthStr) {
   const handler = (snap) => {
     const data = snap.val() || {};
     const payroll = (data.payrollList || []).filter(p => p.name === currentDriver.name);
-
     const el = document.getElementById('salary-detail');
     if (!el) return;
-
     if (payroll.length === 0) {
-      el.innerHTML = `
-        <div class="empty-box">
-          <div class="icon">📭</div>
-          <h3>暫無糧單記錄</h3>
-          <p>${esc(monthStr)} 未發佈糧單<br>或本月未有你嘅記錄</p>
-        </div>
-      `;
+      el.innerHTML = `<div class="empty-box"><div class="icon">📭</div><h3>暫無糧單記錄</h3><p>${esc(monthStr)} 未發佈糧單<br>或本月未有你嘅記錄</p></div>`;
       return;
     }
-
-    // 分上下半月
     const earlyList = payroll.filter(p => p.period === 'early');
     const lateList = payroll.filter(p => p.period === 'late');
-
     let earlyTotal = 0, lateTotal = 0;
     earlyList.forEach(p => { earlyTotal += Number(p.net || 0); });
     lateList.forEach(p => { lateTotal += Number(p.net || 0); });
@@ -1023,35 +638,24 @@ function loadSalary(monthStr) {
 
     let html = `
       <div class="kpi-grid">
-        <div class="kpi-card yellow">
-          <div class="lbl">上半月合計</div>
-          <div class="val">${fmtMoney(earlyTotal)}</div>
-        </div>
-        <div class="kpi-card purple">
-          <div class="lbl">下半月合計</div>
-          <div class="val">${fmtMoney(lateTotal)}</div>
-        </div>
+        <div class="kpi-card yellow"><div class="lbl">上半月合計</div><div class="val">${fmtMoney(earlyTotal)}</div></div>
+        <div class="kpi-card purple"><div class="lbl">下半月合計</div><div class="val">${fmtMoney(lateTotal)}</div></div>
       </div>
-
-      <div class="card" style="background:linear-gradient(135deg,#052e16,#065f46); border-color:#22c55e;">
+      <div class="card" style="background:linear-gradient(135deg,#052e16,#065f46);border-color:#22c55e;">
         <div style="text-align:center;">
           <div style="font-size:13px;color:#86efac;">本月實發總額</div>
           <div style="font-size:36px;font-weight:900;color:#4ade80;margin-top:8px;">${fmtMoney(grandTotal)}</div>
           <div style="font-size:11px;color:#86efac;margin-top:6px;">${esc(monthStr)}</div>
         </div>
       </div>
-
       <div class="section-subtitle">📋 明細</div>
     `;
-
     payroll.sort((a, b) => (a.period === 'early' ? -1 : 1));
-    payroll.forEach((p, idx) => {
+    payroll.forEach(p => {
       const periodLabel = p.period === 'early' ? '上半月 (1-15日)' : '下半月 (16-月底)';
       const periodColor = p.period === 'early' ? '#93c5fd' : '#c4b5fd';
       const statusText = p.status || '未知';
-      const statusColor = statusText.includes('已出') ? '#4ade80' :
-                          statusText.includes('待') ? '#fbbf24' : '#94a3b8';
-
+      const statusColor = statusText.includes('已出') ? '#4ade80' : statusText.includes('待') ? '#fbbf24' : '#94a3b8';
       html += `
         <div class="card" style="border-left:4px solid ${periodColor};">
           <div class="row-flex" style="margin-bottom:10px;">
@@ -1059,23 +663,11 @@ function loadSalary(monthStr) {
               <div style="font-size:15px;font-weight:700;color:${periodColor};">${esc(periodLabel)}</div>
               <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${esc(p.shift || '')}</div>
             </div>
-            <div class="right">
-              <div style="font-size:12px;color:${statusColor};font-weight:700;">${esc(statusText)}</div>
-            </div>
+            <div class="right"><div style="font-size:12px;color:${statusColor};font-weight:700;">${esc(statusText)}</div></div>
           </div>
-
-          <div class="info-row">
-            <span class="lbl">底薪工資</span>
-            <span class="val">${fmtMoney(p.base || 0)}</span>
-          </div>
-          <div class="info-row">
-            <span class="lbl">獎金 / 補貼</span>
-            <span class="val green">+ ${fmtMoney(p.bonus || 0)}</span>
-          </div>
-          <div class="info-row">
-            <span class="lbl">預支 / 扣減</span>
-            <span class="val red">- ${fmtMoney(p.deduct || 0)}</span>
-          </div>
+          <div class="info-row"><span class="lbl">底薪工資</span><span class="val">${fmtMoney(p.base || 0)}</span></div>
+          <div class="info-row"><span class="lbl">獎金 / 補貼</span><span class="val green">+ ${fmtMoney(p.bonus || 0)}</span></div>
+          <div class="info-row"><span class="lbl">預支 / 扣減</span><span class="val red">- ${fmtMoney(p.deduct || 0)}</span></div>
           <div class="info-row" style="border-top:2px solid #334155;margin-top:6px;padding-top:8px;">
             <span class="lbl" style="font-weight:900;color:#f1f5f9;">實發金額</span>
             <span class="val green" style="font-size:18px;">${fmtMoney(p.net || 0)}</span>
@@ -1083,35 +675,28 @@ function loadSalary(monthStr) {
         </div>
       `;
     });
-
     el.innerHTML = html;
   };
   ref.on('value', handler);
-  salaryRef = ref;
-  salaryHandler = handler;
+  salaryRef = ref; salaryHandler = handler;
   registerListener(ref, handler);
 }
 
 // ============================================================
-// Tab 5：我的統計
+// 統計
 // ============================================================
-
 function renderStats() {
   const content = document.getElementById('stats-content');
   const thisMonth = thisMonthStr();
-
   content.innerHTML = `
     <div class="card">
       <div class="card-title">📊 我的統計</div>
-      <div class="month-picker">
-        <input type="month" id="stats-month-picker" value="${esc(thisMonth)}">
-      </div>
+      <div class="month-picker"><input type="month" id="stats-month-picker"></div>
     </div>
-
     <div id="stats-attendance"></div>
     <div id="stats-income"></div>
   `;
-
+  document.getElementById('stats-month-picker').value = thisMonth;
   const picker = document.getElementById('stats-month-picker');
   picker.addEventListener('change', () => loadStats(picker.value));
   loadStats(thisMonth);
@@ -1119,19 +704,10 @@ function renderStats() {
 
 let statsAttRef = null, statsAttHandler = null;
 let statsIncRef = null, statsIncHandler = null;
-
 function loadStats(monthStr) {
-  // 清除舊 listener
-  if (statsAttRef && statsAttHandler) {
-    try { statsAttRef.off('value', statsAttHandler); } catch(e) {}
-    statsAttRef = null; statsAttHandler = null;
-  }
-  if (statsIncRef && statsIncHandler) {
-    try { statsIncRef.off('value', statsIncHandler); } catch(e) {}
-    statsIncRef = null; statsIncHandler = null;
-  }
+  if (statsAttRef && statsAttHandler) { try { statsAttRef.off('value', statsAttHandler); } catch(e) {} statsAttRef = null; statsAttHandler = null; }
+  if (statsIncRef && statsIncHandler) { try { statsIncRef.off('value', statsIncHandler); } catch(e) {} statsIncRef = null; statsIncHandler = null; }
 
-  // ---------- 考勤統計 ----------
   const attEl = document.getElementById('stats-attendance');
   if (attEl) attEl.innerHTML = `<div class="loading-box"><div class="spinner"></div><div>載入考勤統計...</div></div>`;
 
@@ -1142,210 +718,115 @@ function loadStats(monthStr) {
   const attRef = dbB.ref('attendance').orderByKey().startAt(startKey).endAt(endKey + '\uf8ff');
   const attHandler = (snap) => {
     const all = snap.val() || {};
-    let morningDays = 0, nightDays = 0;
-    let morningHours = 0, nightHours = 0;
-    let totalSalary = 0;
-    let totalDays = new Set();
-
+    let morningDays = 0, nightDays = 0, morningHours = 0, nightHours = 0, totalSalary = 0;
+    const totalDays = new Set();
     Object.entries(all).forEach(([date, day]) => {
-      Object.entries(day).forEach(([key, r]) => {
+      Object.values(day).forEach(r => {
         if (r.driverName !== currentDriver.name) return;
         totalDays.add(date);
-        const h = r.hours || 0;
-        const s = r.salary || 0;
+        const h = r.hours || 0, s = r.salary || 0;
         if (r.shift === '早更') { morningDays++; morningHours += h; }
         else if (r.shift === '夜更') { nightDays++; nightHours += h; }
         totalSalary += s;
       });
     });
-
     const el = document.getElementById('stats-attendance');
     if (!el) return;
-
     el.innerHTML = `
       <div class="card">
         <div class="card-title">⏰ 考勤統計（${esc(monthStr)}）</div>
         <div class="kpi-grid">
-          <div class="kpi-card green">
-            <div class="lbl">總工時</div>
-            <div class="val">${(morningHours + nightHours).toFixed(1)} h</div>
-          </div>
-          <div class="kpi-card yellow">
-            <div class="lbl">總人工</div>
-            <div class="val">${fmtMoney(totalSalary)}</div>
-          </div>
+          <div class="kpi-card green"><div class="lbl">總工時</div><div class="val">${(morningHours + nightHours).toFixed(1)} h</div></div>
+          <div class="kpi-card yellow"><div class="lbl">總人工</div><div class="val">${fmtMoney(totalSalary)}</div></div>
         </div>
         <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="lbl">早更（${morningDays}日）</div>
-            <div class="val">${morningHours.toFixed(1)} h</div>
-          </div>
-          <div class="kpi-card purple">
-            <div class="lbl">夜更（${nightDays}日）</div>
-            <div class="val">${nightHours.toFixed(1)} h</div>
-          </div>
+          <div class="kpi-card"><div class="lbl">早更（${morningDays}日）</div><div class="val">${morningHours.toFixed(1)} h</div></div>
+          <div class="kpi-card purple"><div class="lbl">夜更（${nightDays}日）</div><div class="val">${nightHours.toFixed(1)} h</div></div>
         </div>
         <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="lbl">出勤日數</div>
-            <div class="val">${totalDays.size} 日</div>
-          </div>
-          <div class="kpi-card">
-            <div class="lbl">平均每日工時</div>
-            <div class="val">${totalDays.size > 0 ? ((morningHours + nightHours) / totalDays.size).toFixed(1) : '0'} h</div>
-          </div>
+          <div class="kpi-card"><div class="lbl">出勤日數</div><div class="val">${totalDays.size} 日</div></div>
+          <div class="kpi-card"><div class="lbl">平均每日工時</div><div class="val">${totalDays.size > 0 ? ((morningHours + nightHours) / totalDays.size).toFixed(1) : '0'} h</div></div>
         </div>
       </div>
     `;
   };
   attRef.on('value', attHandler);
-  statsAttRef = attRef;
-  statsAttHandler = attHandler;
+  statsAttRef = attRef; statsAttHandler = attHandler;
   registerListener(attRef, attHandler);
 
-  // ---------- 行車收入統計 ----------
   const incEl = document.getElementById('stats-income');
   if (incEl) incEl.innerHTML = `<div class="loading-box"><div class="spinner"></div><div>載入收入統計...</div></div>`;
 
   const incRef = dbB.ref('records').orderByKey().startAt(startKey).endAt(endKey + '\uf8ff');
   const incHandler = (snap) => {
     const all = snap.val() || {};
-    let totalTrips = 0;
-    let totalElec = 0, totalCash = 0;
-    let morningTrips = 0, nightTrips = 0;
-    let specialTrips = 0;
-
-    Object.entries(all).forEach(([date, day]) => {
+    let totalTrips = 0, totalElec = 0, totalCash = 0, morningTrips = 0, nightTrips = 0, specialTrips = 0;
+    Object.values(all).forEach(day => {
       if (!day || !day.trips) return;
       const trips = Array.isArray(day.trips) ? day.trips.filter(Boolean) : Object.values(day.trips).filter(Boolean);
-
       trips.forEach(t => {
-        // 只計自己嘅班次
         if (t.driver !== currentDriver.name) return;
-
         totalTrips++;
-        const elec = (t.c9Elec||0)*9 + (t.c6Elec||0)*6;
-        const cash = (t.c9Cash||0)*9 + (t.c6Cash||0)*6;
-        totalElec += elec;
-        totalCash += cash;
-
+        totalElec += (t.c9Elec||0)*9 + (t.c6Elec||0)*6;
+        totalCash += (t.c9Cash||0)*9 + (t.c6Cash||0)*6;
         if (t.shift === '早更') morningTrips++;
         else if (t.shift === '夜更') nightTrips++;
         else specialTrips++;
       });
     });
-
     const totalRevenue = totalElec + totalCash;
-
     const el = document.getElementById('stats-income');
     if (!el) return;
-
     el.innerHTML = `
       <div class="card">
         <div class="card-title">💰 行車收入統計（${esc(monthStr)}）</div>
         <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="lbl">總班次</div>
-            <div class="val">${totalTrips} 班</div>
-          </div>
-          <div class="kpi-card green">
-            <div class="lbl">總收入</div>
-            <div class="val">${fmtMoney(totalRevenue)}</div>
-          </div>
+          <div class="kpi-card"><div class="lbl">總班次</div><div class="val">${totalTrips} 班</div></div>
+          <div class="kpi-card green"><div class="lbl">總收入</div><div class="val">${fmtMoney(totalRevenue)}</div></div>
         </div>
         <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="lbl">八達通收入</div>
-            <div class="val">${fmtMoney(totalElec)}</div>
-          </div>
-          <div class="kpi-card yellow">
-            <div class="lbl">現金收入</div>
-            <div class="val">${fmtMoney(totalCash)}</div>
-          </div>
+          <div class="kpi-card"><div class="lbl">八達通收入</div><div class="val">${fmtMoney(totalElec)}</div></div>
+          <div class="kpi-card yellow"><div class="lbl">現金收入</div><div class="val">${fmtMoney(totalCash)}</div></div>
         </div>
         <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="lbl">早更班次</div>
-            <div class="val">${morningTrips}</div>
-          </div>
-          <div class="kpi-card purple">
-            <div class="lbl">夜更班次</div>
-            <div class="val">${nightTrips}</div>
-          </div>
+          <div class="kpi-card"><div class="lbl">早更班次</div><div class="val">${morningTrips}</div></div>
+          <div class="kpi-card purple"><div class="lbl">夜更班次</div><div class="val">${nightTrips}</div></div>
         </div>
-        ${specialTrips > 0 ? `
-          <div class="info-row">
-            <span class="lbl">特更班次</span>
-            <span class="val">${specialTrips}</span>
-          </div>
-        ` : ''}
+        ${specialTrips > 0 ? `<div class="info-row"><span class="lbl">特更班次</span><span class="val">${specialTrips}</span></div>` : ''}
       </div>
     `;
   };
   incRef.on('value', incHandler);
-  statsIncRef = incRef;
-  statsIncHandler = incHandler;
+  statsIncRef = incRef; statsIncHandler = incHandler;
   registerListener(incRef, incHandler);
 }
 
 // ============================================================
-// Tab 6：工作工具
+// 工具
 // ============================================================
-
 function renderTools() {
   const content = document.getElementById('tools-content');
-
   content.innerHTML = `
     <div class="card">
       <div class="card-title">🚐 工作工具</div>
-      <div style="font-size:12px;color:#94a3b8;line-height:1.6;">
-        以下工具會打開新視窗
-      </div>
+      <div style="font-size:12px;color:#94a3b8;line-height:1.6;">以下工具會打開新視窗</div>
     </div>
-
     <div class="section-subtitle">💰 收入記錄</div>
     <div class="module-grid">
-      <a class="module-card stats" href="index (8).html" target="_blank">
-        <div class="icon">💰</div>
-        <div class="name">行車收入</div>
-        <div class="desc">記錄每日班次</div>
-      </a>
-      <a class="module-card salary" href="fuel-ocr.html" target="_blank">
-        <div class="icon">⛽</div>
-        <div class="name">燃料費</div>
-        <div class="desc">影收據自動辨識</div>
-      </a>
+      <a class="module-card stats" href="index (8).html" target="_blank"><div class="icon">💰</div><div class="name">行車收入</div><div class="desc">記錄每日班次</div></a>
+      <a class="module-card salary" href="fuel-ocr.html" target="_blank"><div class="icon">⛽</div><div class="name">燃料費</div><div class="desc">影收據自動辨識</div></a>
     </div>
-
     <div class="section-subtitle">⏰ 考勤打卡</div>
     <div class="module-grid">
-      <a class="module-card attendance" href="index (6).html" target="_blank">
-        <div class="icon">⏰</div>
-        <div class="name">即時考勤</div>
-        <div class="desc">報到 · 簽退</div>
-      </a>
-      <a class="module-card roster" href="index (5).html" target="_blank">
-        <div class="icon">✏️</div>
-        <div class="name">補錄查閱</div>
-        <div class="desc">補錄 · 查閱</div>
-      </a>
+      <a class="module-card attendance" href="index (6).html" target="_blank"><div class="icon">⏰</div><div class="name">即時考勤</div><div class="desc">報到 · 簽退</div></a>
+      <a class="module-card roster" href="index (5).html" target="_blank"><div class="icon">✏️</div><div class="name">補錄查閱</div><div class="desc">補錄 · 查閱</div></a>
     </div>
-
     <div class="section-subtitle">🚐 行車工具</div>
     <div class="module-grid">
-      <a class="module-card tracking" href="index%20(9).html" target="_blank">
-        <div class="icon">📡</div>
-        <div class="name">小巴追蹤</div>
-        <div class="desc">GPS 報站 · 對講機</div>
-      </a>
-      <a class="module-card booking" href="booking.html" target="_blank">
-        <div class="icon">🎫</div>
-        <div class="name">留座名單</div>
-        <div class="desc">確認乘客預約</div>
-      </a>
+      <a class="module-card tracking" href="index%20(9).html" target="_blank"><div class="icon">📡</div><div class="name">小巴追蹤</div><div class="desc">GPS 報站 · 對講機</div></a>
+      <a class="module-card booking" href="booking.html" target="_blank"><div class="icon">🎫</div><div class="name">留座名單</div><div class="desc">確認乘客預約</div></a>
     </div>
-
-    <div class="card" style="margin-top:20px; background:#431407; border-color:#fb923c;">
+    <div class="card" style="margin-top:20px;background:#431407;border-color:#fb923c;">
       <div style="font-size:13px;color:#fdba74;line-height:1.8;">
         <strong style="color:#fed7aa;">⚠️ 權限提示</strong><br>
         你可以使用以上工具記錄你自己嘅數據。<br>
@@ -1357,9 +838,38 @@ function renderTools() {
 }
 
 // ============================================================
-// 全域清理（避免 listener 洩漏）
+// 初始化
 // ============================================================
+window.addEventListener('beforeunload', () => { clearAllListeners(); });
 
-window.addEventListener('beforeunload', () => {
-  clearAllListeners();
-});
+(async function init() {
+  console.log('🚐 [Init] 司機專用 Dashboard 啟動');
+  if (!dbA || !dbB || !authA) {
+    document.getElementById('loginScreen').innerHTML = `<div class="login-card"><h2 style="color:#ef4444;">⚠️ 系統錯誤</h2><p style="color:#94a3b8;text-align:center;">Firebase 初始化失敗，請重新載入頁面。</p></div>`;
+    return;
+  }
+
+  currentDriver = loadDriverSession();
+  if (currentDriver) {
+    try {
+      await ensureAuthA();
+      const snap = await dbA.ref('drivers').orderByChild('identifier').equalTo(currentDriver.identifier).once('value');
+      if (snap.exists()) {
+        console.log('✅ [Init] 自動登入成功');
+        showDashboard();
+        return;
+      }
+    } catch(e) { console.warn('⚠️ [Init] 自動登入驗證失敗：', e); }
+    clearDriverSession();
+    currentDriver = null;
+  }
+
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-phone').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') driverLogin();
+  });
+})();
+</script>
+</body>
+</html>
