@@ -37,7 +37,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans
 .quick-stat .num{font-size:24px;font-weight:900;color:#38bdf8;}
 .quick-stat .lbl{font-size:11px;color:#64748b;margin-top:2px;}
 .module-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
-.module-card{background:#1e293b;border-radius:14px;padding:18px 12px;border:1px solid #334155;text-align:center;text-decoration:none;color:inherit;display:block;}
+.module-card{background:#1e293b;border-radius:14px;padding:18px 12px;border:1px solid #334155;text-align:center;cursor:pointer;}
 .module-card:active{background:#334155;transform:scale(.97);}
 .module-card .icon{font-size:32px;margin-bottom:8px;}
 .module-card .name{font-size:14px;font-weight:700;color:#f1f5f9;}
@@ -91,8 +91,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans
 .month-picker input{flex:1;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:15px;outline:none;}
 .section-subtitle{font-size:13px;color:#94a3b8;margin:16px 0 8px 0;font-weight:700;}
 .firebase-status{font-size:11px;color:#64748b;text-align:center;padding:8px;background:#1e293b;border-radius:8px;margin-bottom:12px;}
-.firebase-status.ok{color:#22c55e;}
-.firebase-status.err{color:#ef4444;}
+.tool-btn-warning{position:relative;}
+.tool-btn-warning::after{content:"需 Google";position:absolute;top:6px;right:6px;font-size:9px;background:#dc2626;color:#fff;padding:2px 6px;border-radius:8px;}
 </style>
 </head>
 <body>
@@ -158,13 +158,11 @@ try {
   appA = firebase.initializeApp(firebaseConfigA, 'appA');
   dbA = firebase.database(appA);
   authA = firebase.auth(appA);
-  console.log('✅ [Init] 專案 A 已初始化');
-} catch(e) { console.error('❌ [Init] 專案 A 失敗：', e); }
+} catch(e) { console.error('專案 A 失敗：', e); }
 try {
   appB = firebase.initializeApp(firebaseConfigB, 'appB');
   dbB = firebase.database(appB);
-  console.log('✅ [Init] 專案 B 已初始化');
-} catch(e) { console.error('❌ [Init] 專案 B 失敗：', e); }
+} catch(e) { console.error('專案 B 失敗：', e); }
 
 let currentDriver = null;
 let currentTab = 'home';
@@ -185,34 +183,16 @@ function esc(s) {
   if (s == null) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-function todayStr() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
+function todayStr() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
 function thisMonthStr() { return todayStr().substring(0, 7); }
-function nextMonthStr() {
-  const d = new Date();
-  d.setMonth(d.getMonth() + 1);
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-}
-function lastDayOfMonth(m) {
-  const [y, mm] = m.split('-').map(Number);
-  return new Date(y, mm, 0).getDate();
-}
-function formatTime() {
-  const d = new Date();
-  return d.toLocaleString('zh-HK', { year:'numeric', month:'2-digit', day:'2-digit', weekday:'long', hour:'2-digit', minute:'2-digit' });
-}
-function fmtMoney(n) {
-  return 'HK$ ' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+function nextMonthStr() { const d = new Date(); d.setMonth(d.getMonth() + 1); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
+function lastDayOfMonth(m) { const [y, mm] = m.split('-').map(Number); return new Date(y, mm, 0).getDate(); }
+function formatTime() { const d = new Date(); return d.toLocaleString('zh-HK', { year:'numeric', month:'2-digit', day:'2-digit', weekday:'long', hour:'2-digit', minute:'2-digit' }); }
+function fmtMoney(n) { return 'HK$ ' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
-// 確保有 Firebase Auth（匿名登入）
 async function ensureAuthA() {
   if (authA.currentUser) return authA.currentUser;
-  console.log('🔐 [Auth] 進行匿名登入...');
   const result = await authA.signInAnonymously();
-  console.log('✅ [Auth] 匿名登入成功 uid=' + result.user.uid);
   return result.user;
 }
 
@@ -222,14 +202,9 @@ async function driverLogin() {
   if (!/^\d{8}$/.test(phone)) { toast('請輸入 8 位數字手機號碼'); return; }
   btn.disabled = true;
   btn.textContent = '驗證中...';
-
   try {
     await ensureAuthA();
-
-    console.log('🔍 [查詢] 查 /drivers identifier=' + phone);
     const snap = await dbA.ref('drivers').orderByChild('identifier').equalTo(phone).once('value');
-    console.log('📊 [查詢] 結果 exists=' + snap.exists());
-
     if (!snap.exists()) {
       toast('❌ 此手機號碼未登記為司機');
       btn.disabled = false;
@@ -238,17 +213,12 @@ async function driverLogin() {
     }
     let driverData = null;
     snap.forEach(c => { driverData = { key: c.key, ...c.val() }; });
-
-    currentDriver = {
-      identifier: phone,
-      name: driverData.name || driverData.identifier || phone,
-      key: driverData.key
-    };
+    currentDriver = { identifier: phone, name: driverData.name || driverData.identifier || phone, key: driverData.key };
     saveDriverSession(currentDriver);
     toast('✅ 登入成功');
     showDashboard();
   } catch(e) {
-    console.error('❌ [Login] 登入失敗：', e);
+    console.error('登入失敗：', e);
     toast('❌ 登入失敗：' + e.message);
     btn.disabled = false;
     btn.textContent = '🔐 登入';
@@ -280,9 +250,7 @@ function showDashboard() {
 }
 
 function clearAllListeners() {
-  activeListeners.forEach(({ ref, handler }) => {
-    try { ref.off('value', handler); } catch(e) {}
-  });
+  activeListeners.forEach(({ ref, handler }) => { try { ref.off('value', handler); } catch(e) {} });
   activeListeners = [];
 }
 function registerListener(ref, handler) { activeListeners.push({ ref, handler }); }
@@ -299,6 +267,16 @@ function switchTab(tab) {
   else if (tab === 'salary') renderSalary();
   else if (tab === 'stats') renderStats();
   else if (tab === 'tools') renderTools();
+}
+
+// ============================================================
+// 開工具（唔開新 tab，同一頁面跳轉）
+// ============================================================
+function openTool(url, name) {
+  toast('正在打開「' + name + '」...', 1500);
+  setTimeout(() => {
+    window.location.href = url;
+  }, 300);
 }
 
 // ============================================================
@@ -321,10 +299,10 @@ function renderHome() {
       <div class="module-card salary" onclick="switchTab('salary')"><div class="icon">💰</div><div class="name">我的糧單</div><div class="desc">本月薪酬明細</div></div>
       <div class="module-card stats" onclick="switchTab('stats')"><div class="icon">📊</div><div class="name">我的統計</div><div class="desc">工時 · 收入統計</div></div>
     </div>
-    <div class="section-subtitle">🚐 工作工具</div>
+    <div class="section-subtitle">🚐 快速工具</div>
     <div class="module-grid">
-      <a class="module-card tracking" href="index%20(9).html" target="_blank"><div class="icon">📡</div><div class="name">小巴追蹤</div><div class="desc">GPS 報站 · 對講機</div></a>
-      <a class="module-card booking" href="booking.html" target="_blank"><div class="icon">🎫</div><div class="name">留座名單</div><div class="desc">確認乘客預約</div></a>
+      <div class="module-card tracking" onclick="openTool('index (9).html','小巴追蹤')"><div class="icon">📡</div><div class="name">小巴追蹤</div><div class="desc">GPS 報站 · 對講機</div></div>
+      <div class="module-card booking" onclick="openTool('booking.html','留座名單')"><div class="icon">🎫</div><div class="name">留座名單</div><div class="desc">確認乘客預約</div></div>
     </div>
     <button class="btn btn-outline" style="margin-top:20px;" onclick="driverLogout()">🚪 登出</button>
   `;
@@ -335,7 +313,6 @@ function loadHomeQuickStats() {
   const statsEl = document.getElementById('home-quick-stats');
   if (!statsEl) return;
   statsEl.innerHTML = `<div class="firebase-status">🔄 載入統計中...</div>`;
-
   const today = todayStr();
   const thisMonth = thisMonthStr();
 
@@ -399,9 +376,7 @@ function renderAttendance() {
   const todayHandler = (snap) => {
     const day = snap.val() || {};
     const myRecords = [];
-    Object.entries(day).forEach(([key, r]) => {
-      if (r.driverName === currentDriver.name) myRecords.push({ key, ...r });
-    });
+    Object.entries(day).forEach(([key, r]) => { if (r.driverName === currentDriver.name) myRecords.push({ key, ...r }); });
     const el = document.getElementById('att-today');
     if (!el) return;
     if (myRecords.length === 0) {
@@ -441,27 +416,20 @@ function loadMonthAttendance(monthStr) {
   if (attMonthRef && attMonthHandler) { try { attMonthRef.off('value', attMonthHandler); } catch(e) {} attMonthRef = null; attMonthHandler = null; }
   const listEl = document.getElementById('att-list');
   if (listEl) listEl.innerHTML = `<div class="loading-box"><div class="spinner"></div><div>載入中...</div></div>`;
-
   const last = lastDayOfMonth(monthStr);
   const startKey = monthStr + '-01';
   const endKey = monthStr + '-' + String(last).padStart(2, '0');
-
   const ref = dbB.ref('attendance').orderByKey().startAt(startKey).endAt(endKey + '\uf8ff');
   const handler = (snap) => {
     const all = snap.val() || {};
     const myRecords = [];
     Object.entries(all).forEach(([date, day]) => {
-      Object.entries(day).forEach(([key, r]) => {
-        if (r.driverName === currentDriver.name) myRecords.push({ date, key, ...r });
-      });
+      Object.entries(day).forEach(([key, r]) => { if (r.driverName === currentDriver.name) myRecords.push({ date, key, ...r }); });
     });
     myRecords.sort((a, b) => b.date.localeCompare(a.date));
     const el = document.getElementById('att-list');
     if (!el) return;
-    if (myRecords.length === 0) {
-      el.innerHTML = `<div class="empty-box"><div class="icon">📭</div><h3>本月暫無考勤記錄</h3><p>${esc(monthStr)}</p></div>`;
-      return;
-    }
+    if (myRecords.length === 0) { el.innerHTML = `<div class="empty-box"><div class="icon">📭</div><h3>本月暫無考勤記錄</h3><p>${esc(monthStr)}</p></div>`; return; }
     let totalHours = 0, totalSalary = 0;
     myRecords.forEach(r => { totalHours += r.hours || 0; totalSalary += r.salary || 0; });
     let html = `
@@ -521,16 +489,12 @@ function loadRoster(monthStr) {
   if (rosterRef && rosterHandler) { try { rosterRef.off('value', rosterHandler); } catch(e) {} rosterRef = null; rosterHandler = null; }
   const listEl = document.getElementById('roster-list');
   if (listEl) listEl.innerHTML = `<div class="loading-box"><div class="spinner"></div><div>載入中...</div></div>`;
-
   const ref = dbB.ref('rosters/' + monthStr);
   const handler = (snap) => {
     const roster = snap.val();
     const el = document.getElementById('roster-list');
     if (!el) return;
-    if (!roster) {
-      el.innerHTML = `<div class="empty-box"><div class="icon">📭</div><h3>暫無更表</h3><p>${esc(monthStr)} 未公佈更表</p></div>`;
-      return;
-    }
+    if (!roster) { el.innerHTML = `<div class="empty-box"><div class="icon">📭</div><h3>暫無更表</h3><p>${esc(monthStr)} 未公佈更表</p></div>`; return; }
     const days = Array.isArray(roster) ? roster : Object.values(roster);
     const myDays = days.filter(d => {
       if (!d) return false;
@@ -538,10 +502,7 @@ function loadRoster(monthStr) {
       const n = (d.nDriver || '').trim();
       return m === currentDriver.name || n === currentDriver.name;
     });
-    if (myDays.length === 0) {
-      el.innerHTML = `<div class="empty-box"><div class="icon">🌴</div><h3>本月暫無排更</h3><p>${esc(monthStr)} 未安排你嘅更份</p></div>`;
-      return;
-    }
+    if (myDays.length === 0) { el.innerHTML = `<div class="empty-box"><div class="icon">🌴</div><h3>本月暫無排更</h3><p>${esc(monthStr)} 未安排你嘅更份</p></div>`; return; }
     let morningCount = 0, nightCount = 0, totalHours = 0;
     myDays.forEach(d => {
       const m = (d.mDriver || '').trim();
@@ -618,24 +579,19 @@ function loadSalary(monthStr) {
   if (salaryRef && salaryHandler) { try { salaryRef.off('value', salaryHandler); } catch(e) {} salaryRef = null; salaryHandler = null; }
   const detailEl = document.getElementById('salary-detail');
   if (detailEl) detailEl.innerHTML = `<div class="loading-box"><div class="spinner"></div><div>載入中...</div></div>`;
-
   const ref = dbB.ref('finance/' + monthStr);
   const handler = (snap) => {
     const data = snap.val() || {};
     const payroll = (data.payrollList || []).filter(p => p.name === currentDriver.name);
     const el = document.getElementById('salary-detail');
     if (!el) return;
-    if (payroll.length === 0) {
-      el.innerHTML = `<div class="empty-box"><div class="icon">📭</div><h3>暫無糧單記錄</h3><p>${esc(monthStr)} 未發佈糧單<br>或本月未有你嘅記錄</p></div>`;
-      return;
-    }
+    if (payroll.length === 0) { el.innerHTML = `<div class="empty-box"><div class="icon">📭</div><h3>暫無糧單記錄</h3><p>${esc(monthStr)} 未發佈糧單<br>或本月未有你嘅記錄</p></div>`; return; }
     const earlyList = payroll.filter(p => p.period === 'early');
     const lateList = payroll.filter(p => p.period === 'late');
     let earlyTotal = 0, lateTotal = 0;
     earlyList.forEach(p => { earlyTotal += Number(p.net || 0); });
     lateList.forEach(p => { lateTotal += Number(p.net || 0); });
     const grandTotal = earlyTotal + lateTotal;
-
     let html = `
       <div class="kpi-grid">
         <div class="kpi-card yellow"><div class="lbl">上半月合計</div><div class="val">${fmtMoney(earlyTotal)}</div></div>
@@ -707,10 +663,8 @@ let statsIncRef = null, statsIncHandler = null;
 function loadStats(monthStr) {
   if (statsAttRef && statsAttHandler) { try { statsAttRef.off('value', statsAttHandler); } catch(e) {} statsAttRef = null; statsAttHandler = null; }
   if (statsIncRef && statsIncHandler) { try { statsIncRef.off('value', statsIncHandler); } catch(e) {} statsIncRef = null; statsIncHandler = null; }
-
   const attEl = document.getElementById('stats-attendance');
   if (attEl) attEl.innerHTML = `<div class="loading-box"><div class="spinner"></div><div>載入考勤統計...</div></div>`;
-
   const last = lastDayOfMonth(monthStr);
   const startKey = monthStr + '-01';
   const endKey = monthStr + '-' + String(last).padStart(2, '0');
@@ -809,29 +763,46 @@ function renderTools() {
   content.innerHTML = `
     <div class="card">
       <div class="card-title">🚐 工作工具</div>
-      <div style="font-size:12px;color:#94a3b8;line-height:1.6;">以下工具會打開新視窗</div>
+      <div style="font-size:12px;color:#94a3b8;line-height:1.6;">
+        撳完會喺同一頁面打開，用瀏覽器「返回」掣返嚟。
+      </div>
     </div>
+
     <div class="section-subtitle">💰 收入記錄</div>
     <div class="module-grid">
-      <a class="module-card stats" href="index (8).html" target="_blank"><div class="icon">💰</div><div class="name">行車收入</div><div class="desc">記錄每日班次</div></a>
-      <a class="module-card salary" href="fuel-ocr.html" target="_blank"><div class="icon">⛽</div><div class="name">燃料費</div><div class="desc">影收據自動辨識</div></a>
+      <div class="module-card stats" onclick="openTool('index (8).html','行車收入')">
+        <div class="icon">💰</div><div class="name">行車收入</div><div class="desc">記錄每日班次</div>
+      </div>
+      <div class="module-card salary" onclick="openTool('fuel-ocr.html','燃料費')">
+        <div class="icon">⛽</div><div class="name">燃料費</div><div class="desc">影收據自動辨識</div>
+      </div>
     </div>
+
     <div class="section-subtitle">⏰ 考勤打卡</div>
     <div class="module-grid">
-      <a class="module-card attendance" href="index (6).html" target="_blank"><div class="icon">⏰</div><div class="name">即時考勤</div><div class="desc">報到 · 簽退</div></a>
-      <a class="module-card roster" href="index (5).html" target="_blank"><div class="icon">✏️</div><div class="name">補錄查閱</div><div class="desc">補錄 · 查閱</div></a>
+      <div class="module-card attendance" onclick="openTool('index (6).html','即時考勤')">
+        <div class="icon">⏰</div><div class="name">即時考勤</div><div class="desc">報到 · 簽退</div>
+      </div>
+      <div class="module-card roster" onclick="openTool('index (5).html','補錄查閱')">
+        <div class="icon">✏️</div><div class="name">補錄查閱</div><div class="desc">補錄 · 查閱</div>
+      </div>
     </div>
+
     <div class="section-subtitle">🚐 行車工具</div>
     <div class="module-grid">
-      <a class="module-card tracking" href="index%20(9).html" target="_blank"><div class="icon">📡</div><div class="name">小巴追蹤</div><div class="desc">GPS 報站 · 對講機</div></a>
-      <a class="module-card booking" href="booking.html" target="_blank"><div class="icon">🎫</div><div class="name">留座名單</div><div class="desc">確認乘客預約</div></a>
+      <div class="module-card tracking" onclick="openTool('index (9).html','小巴追蹤')">
+        <div class="icon">📡</div><div class="name">小巴追蹤</div><div class="desc">GPS 報站 · 對講機</div>
+      </div>
+      <div class="module-card booking" onclick="openTool('booking.html','留座名單')">
+        <div class="icon">🎫</div><div class="name">留座名單</div><div class="desc">確認乘客預約</div>
+      </div>
     </div>
+
     <div class="card" style="margin-top:20px;background:#431407;border-color:#fb923c;">
       <div style="font-size:13px;color:#fdba74;line-height:1.8;">
-        <strong style="color:#fed7aa;">⚠️ 權限提示</strong><br>
-        你可以使用以上工具記錄你自己嘅數據。<br>
-        系統已自動過濾，你只會見到自己嘅資料。<br>
-        其他司機嘅記錄同公司財務資料，你係睇唔到嘅。
+        <strong style="color:#fed7aa;">⚠️ 提示</strong><br>
+        「即時考勤」同「補錄查閱」需要 Google 帳號登入。<br>
+        如果彈出 Google 登入畫面，即係話呢個工具暫時唔支援匿名登入。
       </div>
     </div>
   `;
@@ -843,27 +814,20 @@ function renderTools() {
 window.addEventListener('beforeunload', () => { clearAllListeners(); });
 
 (async function init() {
-  console.log('🚐 [Init] 司機專用 Dashboard 啟動');
   if (!dbA || !dbB || !authA) {
-    document.getElementById('loginScreen').innerHTML = `<div class="login-card"><h2 style="color:#ef4444;">⚠️ 系統錯誤</h2><p style="color:#94a3b8;text-align:center;">Firebase 初始化失敗，請重新載入頁面。</p></div>`;
+    document.getElementById('loginScreen').innerHTML = `<div class="login-card"><h2 style="color:#ef4444;">⚠️ 系統錯誤</h2><p style="color:#94a3b8;text-align:center;">Firebase 初始化失敗。</p></div>`;
     return;
   }
-
   currentDriver = loadDriverSession();
   if (currentDriver) {
     try {
       await ensureAuthA();
       const snap = await dbA.ref('drivers').orderByChild('identifier').equalTo(currentDriver.identifier).once('value');
-      if (snap.exists()) {
-        console.log('✅ [Init] 自動登入成功');
-        showDashboard();
-        return;
-      }
-    } catch(e) { console.warn('⚠️ [Init] 自動登入驗證失敗：', e); }
+      if (snap.exists()) { showDashboard(); return; }
+    } catch(e) {}
     clearDriverSession();
     currentDriver = null;
   }
-
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-phone').addEventListener('keydown', (e) => {
