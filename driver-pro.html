@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>浚鍵管理有限公司 · 司機專業端 (留位總覽)</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0a0f1a; color: #e2e8f0; min-height: 100vh; padding: 16px; }
+.header { text-align: center; margin-bottom: 16px; }
+.header h1 { font-size: 20px; color: #22c55e; font-weight: 800; }
+.card { background: #1e293b; border-radius: 16px; padding: 16px; margin-bottom: 14px; border: 1px solid #334155; }
+.card-title { font-size: 15px; font-weight: 700; color: #94a3b8; margin-bottom: 10px; }
+.btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; }
+.btn-success { background: #22c55e; color: #fff; }
+.btn-primary { background: #0ea5e9; color: #fff; }
+.input-group { margin-bottom: 12px; }
+.input-group label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 4px; }
+.input-group input, .input-group select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: #f1f5f9; font-size: 16px; }
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 10px; font-size: 14px; z-index: 9999; opacity: 0; transition: opacity 0.3s; border: 1px solid #334155; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🧑‍✈️ 司機專業端與留位總覽</h1>
+  <div style="font-size:12px;color:#64748b;margin-top:2px;">浚鍵管理有限公司</div>
+</div>
+
+<div class="card">
+  <div class="card-title">🚐 車牌與當值設定</div>
+  <div class="input-group">
+    <label>您的車牌號碼</label>
+    <input type="text" id="d-plate" placeholder="例如: CG23">
+  </div>
+  <div class="input-group">
+    <label>車型座位數</label>
+    <select id="d-seats"><option value="16">16 座位</option><option value="19">19 座位</option></select>
+  </div>
+  <button class="btn btn-success" onclick="startDriverDuty()">🟢 開始當值並同步</button>
+</div>
+
+<!-- 您的核心要求：整頁式留位總覽清單 -->
+<div class="card" style="border:2px solid #38bdf8;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <h3 style="color:#38bdf8; font-size:16px; margin:0;">📋 全日留位總覽清單 (整頁檢視)</h3>
+    <span id="d-status-badge" style="background:#7c2d12; color:#fed7aa; padding:2px 8px; border-radius:6px; font-size:12px;">未當值</span>
+  </div>
+
+  <div style="display:flex; gap:8px; margin-bottom:12px; text-align:center;">
+    <div style="flex:1; background:#0f172a; padding:10px; border-radius:10px;">
+      <div style="font-size:11px; color:#94a3b8;">已確認人數</div>
+      <div id="d-confirmed-count" style="font-size:22px; font-weight:800; color:#22c55e;">0</div>
+    </div>
+    <div style="flex:1; background:#0f172a; padding:10px; border-radius:10px;">
+      <div style="font-size:11px; color:#94a3b8;">待確認審核</div>
+      <div id="d-pending-count" style="font-size:22px; font-weight:800; color:#f59e0b;">0</div>
+    </div>
+  </div>
+
+  <!-- 完整清單容器（不彈窗，整頁列出所有留位乘客） -->
+  <div id="d-master-booking-list" style="max-height:400px; overflow-y:auto; background:#0f172a; border-radius:10px; padding:8px;">
+    <div style="text-align:center; color:#888; padding:20px;">請先設定車牌並開始當值</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAX7Zy5br1ozGOGxHvDeFNY-Ldcjjw8Qgc",
+  authDomain: "triple-login-version.firebaseapp.com",
+  databaseURL: "https://triple-login-version-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "triple-login-version",
+  storageBucket: "triple-login-version.firebasestorage.app",
+  messagingSenderId: "66459706459",
+  appId: "1:66459706459:web:28f99a455652f393da0b7e"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+let activePlate = localStorage.getItem('driver_plate') || '';
+let activeSeats = parseInt(localStorage.getItem('driver_seats') || '16');
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function getToday() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+async function startDriverDuty() {
+  const plate = document.getElementById('d-plate').value.trim().toUpperCase();
+  const seats = parseInt(document.getElementById('d-seats').value);
+  if (!plate) { toast('請輸入車牌號碼'); return; }
+
+  await auth.signInAnonymously();
+  activePlate = plate;
+  activeSeats = seats;
+  localStorage.setItem('driver_plate', plate);
+  localStorage.setItem('driver_seats', seats);
+
+  // 同時寫入活躍車輛狀態
+  await db.ref('van/active_buses/' + plate).set({
+    plate: plate,
+    carSeats: seats,
+    passengerCount: 0,
+    isActive: true,
+    lastUpdate: Date.now()
+  });
+
+  document.getElementById('d-status-badge').style.background = '#052e16';
+  document.getElementById('d-status-badge').style.color = '#4ade80';
+  document.getElementById('d-status-badge').textContent = '當值中 (車牌: ' + plate + ')';
+  
+  toast('✅ 已經成功開始當值 (' + plate + ' - ' + seats + '座)');
+  loadDriverMasterBookingList(plate);
+}
+
+function loadDriverMasterBookingList(plate) {
+  const today = getToday();
+  const container = document.getElementById('d-master-booking-list');
+  
+  db.ref('booking/' + today).on('value', snap => {
+    const data = snap.val() || {};
+    let html = '';
+    let confirmedCount = 0;
+    let pendingCount = 0;
+
+    const items = Object.values(data).filter(b => b.status !== 'cancelled' && b.status !== 'rejected');
+    
+    if (items.length === 0) {
+      container.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">今日暫無乘客留位記錄</div>';
+      return;
+    }
+
+    items.forEach((item, index) => {
+      if (item.status === 'reserved' || item.status === 'boarded') confirmedCount += (item.seats || 1);
+      if (item.status === 'pending') pendingCount++;
+
+      let statusBadge = '';
+      if (item.status === 'pending') statusBadge = '<span style="background:#7c2d12; color:#fed7aa; padding:2px 8px; border-radius:6px; font-size:11px;">⏳ 待確認</span>';
+      else if (item.status === 'reserved') statusBadge = '<span style="background:#052e16; color:#4ade80; padding:2px 8px; border-radius:6px; font-size:11px;">✅ 已確認</span>';
+      else if (item.status === 'boarded') statusBadge = '<span style="background:#082f49; color:#38bdf8; padding:2px 8px; border-radius:6px; font-size:11px;">🚐 已上車</span>';
+
+      html += `
+        <div style="background:#1e293b; padding:10px 12px; border-radius:8px; margin-bottom:8px; border-left:4px solid ${item.status==='reserved'?'#22c55e':'#f59e0b'}; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; font-size:14px; color:#fff;">#${index+1} ${item.passengerName} (${item.seats||1}位) · ${item.time}</div>
+            <div style="font-size:12px; color:#94a3b8; margin-top:2px;">📞 ${item.passengerPhone}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            ${statusBadge}
+            ${item.status === 'pending' ? `<button onclick="driverConfirmBooking('${today}','${item.id}','${plate}')" style="background:#22c55e; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:700; cursor:pointer; font-size:13px;">確認</button>` : ''}
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+    document.getElementById('d-confirmed-count').textContent = confirmedCount + ' / ' + activeSeats;
+    document.getElementById('d-pending-count').textContent = pendingCount;
+  });
+}
+
+async function driverConfirmBooking(date, id, plate) {
+  try {
+    await db.ref('booking/' + date + '/' + id).update({
+      status: 'reserved',
+      confirmedAt: Date.now(),
+      confirmedBy: plate
+    });
+    toast('✅ 已確認留位');
+  } catch (e) {
+    toast('❌ 確認失敗：' + e.message);
+  }
+}
+
+window.onload = () => {
+  if (activePlate) {
+    document.getElementById('d-plate').value = activePlate;
+    document.getElementById('d-seats').value = activeSeats;
+    startDriverDuty();
+  }
+};
+</script>
+</body>
+</html>
