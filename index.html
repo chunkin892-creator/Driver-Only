@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>浚鍵管理有限公司 · 西鐵小巴旗艦系統</title>
+<title>浚鍵管理有限公司 · 西鐵小巴旗艦系統 v5.1</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -25,12 +25,12 @@ body{background:#0a0f1a;color:#e2e8f0;height:100vh;display:flex;flex-direction:c
 .btn-primary{background:#0ea5e9}
 .btn-portal{background:linear-gradient(135deg,#0ea5e9,#0284c7)}
 .btn-driver{background:linear-gradient(135deg,#22c55e,#16a34a)}
-.btn-success{background:#22c55e}
-.btn-danger{background:#ef4444}
+.btn-success{background:#22c55e;color:#fff}
+.btn-danger{background:#ef4444;color:#fff}
 .btn-warn{background:#f59e0b;color:#000}
 .btn-secondary{background:#334155;color:#94a3b8}
 .btn-outline{background:transparent;border:1px solid #334155;color:#94a3b8}
-.btn-purple{background:#a855f7}
+.btn-purple{background:#a855f7;color:#fff}
 .btn-sm{padding:8px 14px;font-size:13px;width:auto;display:inline-block;margin:0 4px 0 0}
 .row{display:flex;gap:8px;margin-bottom:8px}
 .row>*{flex:1}
@@ -79,12 +79,10 @@ label{display:block;font-size:13px;color:#94a3b8;margin-bottom:4px;font-weight:6
 .rec-dot{width:10px;height:10px;border-radius:50%;background:red;animation:pulse .6s infinite}
 @keyframes pulse{50%{opacity:.3}}
 .booking-card{background:#0f172a;border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid #334155}
-.booking-card.full{border-color:#ef4444;background:#450a0a}
 .booking-card .time{font-size:22px;font-weight:900;color:#38bdf8}
 .booking-card .info{font-size:12px;color:#94a3b8;margin-top:2px}
 .booking-card .counts{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
 .booking-card .seat-num{font-size:24px;font-weight:900;color:#22c55e}
-.booking-card .seat-num.zero{color:#ef4444}
 .pending-item{background:#1e293b;border-radius:8px;padding:10px;margin-bottom:6px;border-left:4px solid #f59e0b}
 .pending-item .name{font-size:15px;font-weight:700;color:#fff}
 .pending-item .actions{display:flex;gap:6px;margin-top:8px}
@@ -92,11 +90,9 @@ label{display:block;font-size:13px;color:#94a3b8;margin-bottom:4px;font-weight:6
 .btn-confirm{background:#22c55e;color:#fff}
 .btn-reject{background:#ef4444;color:#fff}
 .pax-card{background:#0f172a;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #334155;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
-.pax-card.full{opacity:.5}
 .pax-card .time{font-size:20px;font-weight:700;color:#fff}
 .pax-card .info{font-size:12px;color:#94a3b8;margin-top:2px}
 .pax-card .num{font-size:22px;font-weight:700;color:#22c55e}
-.pax-card .num.zero{color:#ef4444}
 .wake-lock-status{position:fixed;bottom:10px;left:10px;font-size:11px;color:#94a3b8;z-index:5;background:rgba(15,23,42,.8);padding:4px 8px;border-radius:8px;border:1px solid #334155}
 .connection-status{position:fixed;top:56px;left:50%;transform:translateX(-50%);padding:4px 16px;border-radius:20px;font-size:13px;z-index:100;display:none}
 .connection-status.online{background:#22c55e;color:#fff;display:block}
@@ -106,7 +102,7 @@ label{display:block;font-size:13px;color:#94a3b8;margin-bottom:4px;font-weight:6
 <body>
 <div class="header">
   <div class="title">🚐 浚鍵管理有限公司 · 西鐵小巴系統</div>
-  <div class="dev">營辦商：大棠黃泥墩 ⇄ 元朗市中心</div>
+  <div class="dev">大棠黃泥墩 ⇄ 元朗市中心快線</div>
   <button class="voice-btn" id="global-voice-btn">🔊</button>
 </div>
 <div class="connection-status" id="connection-status"></div>
@@ -140,7 +136,7 @@ label{display:block;font-size:13px;color:#94a3b8;margin-bottom:4px;font-weight:6
   </div>
 </div>
 
-<!-- 司機端即時通知彈窗（有新預約／訊息時強制彈出） -->
+<!-- 司機端即時彈窗通知 (Modal) -->
 <div class="modal" id="driver-alert-modal">
   <div class="modal-card" style="border-color:#22c55e">
     <h2 style="color:#22c55e">🚨 收到新的留位或訊息！</h2>
@@ -157,8 +153,8 @@ label{display:block;font-size:13px;color:#94a3b8;margin-bottom:4px;font-weight:6
       <button class="btn btn-outline btn-sm" onclick="speakUsageGuide()">🔊 播放語音說明</button>
     </div>
     <div style="font-size:14px;line-height:1.8;color:#94a3b8;margin-top:10px">
-      🚏 <strong>司機端</strong>：登入→設定車牌→認領當值班次→自動GPS報站→彈窗接收留位與確認。<br>
-      🧍 <strong>乘客端</strong>：登入→追蹤即時小巴或預約固定／循環線留位，隨時回報已上車。<br>
+      🚏 <strong>司機端</strong>：登入後設定車牌與認領當值班次，接收全功能彈窗通知與聲音警報。<br>
+      🧍 <strong>乘客端</strong>：登入後可查看即時車輛位置、留位、語音輸入及回報「我已上車」。<br>
       🎙️ <strong>對講機</strong>：司機與管理員即時語音及文字通訊。
     </div>
   </div>
@@ -237,7 +233,7 @@ label{display:block;font-size:13px;color:#94a3b8;margin-bottom:4px;font-weight:6
     <button class="btn btn-primary" id="btn-next">下一站 ▶</button>
   </div>
   <div class="row">
-    <button class="btn btn-success" id="d-full-btn">🚫 滿座</button>
+    <button class="btn btn-success" id="d-full-btn">🚫 設為滿座</button>
     <button class="btn btn-secondary" id="d-car-btn">16座</button>
   </div>
   <div class="row">
@@ -321,9 +317,9 @@ label{display:block;font-size:13px;color:#94a3b8;margin-bottom:4px;font-weight:6
 
 <script>
 /* ============================================================
-   浚鍵管理有限公司 · 西鐵小巴旗艦整合系統 v5.0
+   浚鍵管理有限公司 · 西鐵小巴旗艦整合系統 v5.1
    ============================================================ */
-console.log('🔵 浚鍵西鐵小巴系統 v5.0 初始化');
+console.log('🔵 浚鍵西鐵小巴系統 v5.1 初始化');
 
 const firebaseConfig = {
   apiKey: "AIzaSyAX7Zy5br1ozGOGxHvDeFNY-Ldcjjw8Qgc",
@@ -401,9 +397,6 @@ let lastGpsProcessTime = 0;
 let lastReportedIndex = -1;
 let lastDriverScrollIndex = -1;
 let positionBuffer = [];
-let pendingStationIdx = -1;
-let pendingStationCount = 0;
-let isLoggingIn = false;
 let _speakQueue = [];
 let _speakBusy = false;
 let busListRef = null;
@@ -615,8 +608,6 @@ const DataLayer = {
     return b;
   },
   async updateBooking(date, id, patch) { return db.ref('booking/' + date + '/' + id).update(patch); },
-  async getPassenger(phone) { const s = await db.ref('booking_passengers/' + phone).once('value'); return s.val(); },
-  async savePassenger(phone, patch) { return db.ref('booking_passengers/' + phone).update(patch); },
   async getLoopQueue(date) { const s = await db.ref('booking_loop/' + date).once('value'); return s.val() || {}; },
   async addLoopQueue(date, item) {
     const r = db.ref('booking_loop/' + date).push();
@@ -629,7 +620,7 @@ const DataLayer = {
   async removeLoopQueue(date, id) { return db.ref('booking_loop/' + date + '/' + id).remove(); }
 };
 
-/* 司機端介面更新與 GPS 報站 */
+/* 司機端介面更新與警報 */
 function updateDriverUI() {
   const route = getRoute();
   const idx = driverData.stationIndex || 0;
@@ -712,6 +703,7 @@ function switchDriverTab(tab) {
     if (panel) panel.style.display = (k === tab ? 'block' : 'none');
   });
   if (tab === 'booking') startDriverBookingListeners();
+  if (tab === 'walkie') initWalkieTalkie();
 }
 
 function renderDriverBookingContent() {
@@ -723,8 +715,8 @@ function renderDriverBookingContent() {
   
   h += '<div class="card-title">🚐 班次認領與車牌綁定</div>';
   h += `<div style="background:#0f172a;padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid #334155">
-    <div style="font-size:13px;color:#38bdf8;font-weight:700;margin-bottom:6px">目前綁定車牌：${esc(driverData.plate || '尚未設定')}</div>
-    <div style="font-size:12px;color:#94a3b8">司機透過此處確認負責營運的班次，乘客端將會同步顯示您的車牌。</div>
+    <div style="font-size:13px;color:#38bdf8;font-weight:700;margin-bottom:6px">目前車牌綁定：${esc(driverData.plate || '尚未設定車牌')}</div>
+    <div style="font-size:12px;color:#94a3b8">司機設定車牌後，在此確認負責營運的班次，乘客端將即時看見您的車牌號碼。</div>
   </div>`;
 
   h += '<div class="card-title">🌅 早上固定班次留位審核</div>';
@@ -841,6 +833,22 @@ async function driverRejectLoop(id) {
   } catch (e) { showToast('❌ 失敗：' + e.message); }
 }
 
+function initWalkieTalkie() {
+  if (!driverData.plate) return;
+  db.ref('van/walkie_talkie').orderByChild('timestamp').limitToLast(50).on('value', async s => {
+    const c = document.getElementById('walkie-messages');
+    if (!c) return;
+    c.innerHTML = '';
+    s.forEach(ch => {
+      const m = ch.val();
+      const div = document.createElement('div');
+      div.style.cssText = 'padding:4px 0;border-bottom:1px solid #334155;font-size:14px';
+      div.innerHTML = `<strong>${esc(m.senderPlate||'未知')}:</strong> ${esc(m.text||'語音訊息')}`;
+      c.appendChild(div);
+    });
+  });
+}
+
 /* 乘客端主介面與預約 */
 function switchPaxTab(tab) {
   paxActiveTab = tab;
@@ -889,7 +897,7 @@ function renderPaxShiftCard(d, tm, ab) {
   const rem = quota - used;
   return `<div class="pax-card" onclick="paxSelectShift('${d}','${tm}')">
     <div><div class="time">${tm}</div><div class="info">${getOrigL(tm)}</div></div>
-    <div style="text-align:right"><div class="num ${rem<=0?'zero':''}">${rem}</div><div style="font-size:11px;color:#94a3b8">剩餘座位</div></div>
+    <div style="text-align:right"><div class="num">${rem}</div><div style="font-size:11px;color:#94a3b8">剩餘座位</div></div>
   </div>`;
 }
 
@@ -1088,7 +1096,23 @@ document.getElementById('fps-code').addEventListener('click', () => {
   navigator.clipboard.writeText('122891914').then(() => showToast('✅ 已複製轉數快號碼：122891914'));
 });
 
-console.log('✅ 浚鍵管理有限公司 · 西鐵小巴旗艦整合系統載入完畢');
+// 初始化語音錄音 UI
+setupRecorderUI('passenger', (base64) => {
+  if (!currentBusId) return;
+  db.ref('van/messages').push({ busId: currentBusId, senderUid: currentUser.uid, senderIdentifier: currentUser.identifier, audio: base64, timestamp: nowMs(), type: 'audio' }).then(() => showToast('✅ 乘客語音已發送'));
+});
+
+setupRecorderUI('driver', (base64) => {
+  if (!driverData.plate) return;
+  db.ref('van/messages').push({ busId: driverData.plate, senderUid: currentUser.uid, senderIdentifier: currentUser.identifier, audio: base64, timestamp: nowMs(), type: 'audio' }).then(() => showToast('✅ 語音已發送'));
+});
+
+setupRecorderUI('walkie', (base64) => {
+  if (!driverData.plate) return;
+  db.ref('van/walkie_talkie').push({ senderUid: currentUser.uid, senderIdentifier: currentUser.identifier, senderPlate: driverData.plate, target: 'all', audio: base64, timestamp: nowMs(), type: 'walkie_audio' }).then(() => showToast('✅ 對講機語音已廣播'));
+});
+
+console.log('✅ 浚鍵管理有限公司 · 西鐵小巴旗艦整合系統 v5.1 載入完畢');
 </script>
 </body>
 </html>
