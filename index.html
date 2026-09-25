@@ -2,140 +2,157 @@
 <html lang="zh-HK">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>浚鍵管理有限公司 · 西鐵小巴旗艦系統 v5.5 (尊貴黑金版)</title>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>浚鍵管理有限公司 · 乘客專用端</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent}
-body{background:#0b0f19 !important;color:#f1f5f9 !important;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:16px}
-
-/* 高級質感頂部導航 */
-.header{padding:16px 20px;text-align:center;border-bottom:1px solid rgba(56,189,248,0.15) !important;flex-shrink:0;position:relative;background:linear-gradient(135deg,#131c2e,#0b0f19) !important;box-shadow:0 4px 25px rgba(0,0,0,0.8)}
-.header .title{font-size:22px;font-weight:800;color:#38bdf8 !important;letter-spacing:0.5px}
-.header .dev{font-size:12px;color:#94a3b8 !important;margin-top:3px}
-.voice-btn{position:absolute;top:14px;right:16px;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7) !important;border:none !important;color:#fff !important;font-size:18px;cursor:pointer;box-shadow:0 2px 10px rgba(14,165,233,0.4)}
-.voice-btn.muted{background:linear-gradient(135deg,#f43f5e,#e11d48) !important}
-
-.view{display:none;flex:1;overflow-y:auto;padding:16px;background:#0b0f19 !important}
-.view.active{display:block}
-
-/* 高級霧面碳黑卡片 */
-.card{background:linear-gradient(145deg,#131c2e,#1a263d) !important;border-radius:18px;padding:18px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.07) !important;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
-.card-title{font-size:15px;font-weight:700;color:#38bdf8 !important;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(56,189,248,0.2) !important}
-
-/* 按鈕全面改為高級流光金屬漸層，徹底告別螢光綠藍 */
-.btn{width:100%;padding:16px;border-radius:14px;font-size:16px;font-weight:700;border:none !important;cursor:pointer;color:#fff !important;margin-bottom:10px;display:block;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,0.4);transition:all 0.2s ease}
-.btn:active{opacity:.85;transform:scale(0.98)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b0f19;color:#e2e8f0;min-height:100vh;padding-bottom:20px}
+.header{position:sticky;top:0;background:linear-gradient(135deg,#131c2e,#0b0f19);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(56,189,248,.2);z-index:100}
+.header h1{font-size:16px;color:#38bdf8;font-weight:800}
+.header a{color:#94a3b8;text-decoration:none;font-size:13px}
+.container{padding:14px}
+.card{background:linear-gradient(145deg,#131c2e,#1a263d);border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid rgba(255,255,255,.08)}
+.card-title{font-size:14px;font-weight:700;color:#38bdf8;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(56,189,248,.2)}
+.btn{width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;color:#fff;margin-bottom:8px;transition:all .15s;text-align:center;font-family:inherit}
+.btn:active{transform:scale(.98);opacity:.85}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-
-/* 乘客入口：高級深海藍金屬漸層 */
-.btn-portal{background:linear-gradient(135deg,#0284c7,#0369a1) !important;border:1px solid rgba(56,189,248,0.3) !important}
-/* 司機入口：高級沉穩墨綠金屬漸層 */
-.btn-driver{background:linear-gradient(135deg,#059669,#047857) !important;border:1px solid rgba(16,185,129,0.3) !important}
-.btn-primary{background:linear-gradient(135deg,#0ea5e9,#0284c7) !important}
-.btn-success{background:linear-gradient(135deg,#10b981,#059669) !important}
-.btn-danger{background:linear-gradient(135deg,#f43f5e,#e11d48) !important}
-.btn-warn{background:linear-gradient(135deg,#fbbf24,#f59e0b) !important;color:#0b0f19 !important}
-.btn-secondary{background:#1e293b !important;color:#94a3b8 !important;border:1px solid rgba(255,255,255,0.08) !important}
-.btn-outline{background:transparent !important;border:1px solid rgba(56,189,248,0.3) !important;color:#38bdf8 !important}
-.btn-purple{background:linear-gradient(135deg,#a855f7,#9333ea) !important;color:#fff !important}
-.btn-sm{padding:8px 14px;font-size:13px;width:auto;display:inline-block;margin:0 4px 0 0}
-
-.row{display:flex;gap:10px;margin-bottom:10px}
+.btn-primary{background:linear-gradient(135deg,#0ea5e9,#0284c7)}
+.btn-success{background:linear-gradient(135deg,#10b981,#059669)}
+.btn-danger{background:linear-gradient(135deg,#f43f5e,#e11d48)}
+.btn-warn{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#111}
+.btn-secondary{background:#1e293b;color:#94a3b8;border:1px solid rgba(255,255,255,.1)}
+.btn-outline{background:transparent;border:1px solid rgba(56,189,248,.4);color:#38bdf8}
+.btn-sm{padding:7px 12px;font-size:13px;width:auto;display:inline-block;margin:0 3px 0 0}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#070a12;color:#f1f5f9;font-size:15px;margin-bottom:10px;outline:none;font-family:inherit}
+input:focus{border-color:#38bdf8}
+label{display:block;font-size:12px;color:#94a3b8;margin-bottom:5px;font-weight:600}
+.row{display:flex;gap:8px;margin-bottom:8px}
 .row>*{flex:1}
-
-input,select,textarea{width:100%;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.12) !important;font-size:16px;background:#070a12 !important;color:#f1f5f9 !important;margin-bottom:12px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:#38bdf8 !important;box-shadow:0 0 0 3px rgba(56,189,248,0.2)}
-label{display:block;font-size:13px;color:#94a3b8 !important;margin-bottom:6px;font-weight:600}
-
-.big-number{font-size:48px;font-weight:800;text-align:center;color:#34d399 !important;margin:6px 0}
-.station-name{font-size:24px;font-weight:700;text-align:center;color:#38bdf8 !important;margin:6px 0}
-
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e293b !important;color:#fff !important;padding:12px 24px;border-radius:12px;font-size:14px;z-index:9999;opacity:0;transition:opacity .3s;border:1px solid rgba(56,189,248,0.4);pointer-events:none;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.8)}
+.tab-bar{display:flex;gap:6px;margin-bottom:12px}
+.tab-btn{flex:1;padding:10px;background:#070a12;border:1px solid rgba(255,255,255,.08);color:#94a3b8;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700}
+.tab-btn.active{background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;border-color:transparent}
+.pax-card{background:#070a12;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid rgba(255,255,255,.08);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.pax-card:hover{border-color:rgba(56,189,248,.4)}
+.pax-card .time{font-size:20px;font-weight:700;color:#fff}
+.pax-card .info{font-size:12px;color:#94a3b8;margin-top:2px}
+.pax-card .plate{font-size:12px;color:#34d399;font-weight:700;margin-top:4px}
+.pax-card .num{font-size:22px;font-weight:700;color:#34d399}
+.pax-card.full{opacity:.5}
+.pax-card.full .num{color:#f43f5e}
+.my-booking{background:#070a12;border-radius:10px;padding:12px;margin-bottom:8px;border-left:4px solid #38bdf8}
+.my-booking.reserved{border-left-color:#10b981}
+.my-booking.boarded{border-left-color:#0ea5e9}
+.my-booking.pending{border-left-color:#fbbf24}
+.badge{display:inline-block;padding:3px 9px;border-radius:12px;font-weight:700;font-size:11px;margin:2px}
+.badge-green{background:rgba(16,185,129,.2);color:#6ee7b7;border:1px solid rgba(16,185,129,.4)}
+.badge-yellow{background:rgba(251,191,36,.2);color:#fcd34d;border:1px solid rgba(251,191,36,.4)}
+.badge-blue{background:rgba(56,189,248,.2);color:#7dd3fc;border:1px solid rgba(56,189,248,.4)}
+.badge-red{background:rgba(244,63,94,.2);color:#fda4af;border:1px solid rgba(244,63,94,.4)}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity .3s;border:1px solid rgba(56,189,248,.4);pointer-events:none;max-width:90%;text-align:center}
 .toast.show{opacity:1}
-
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,7,13,0.9);backdrop-filter:blur(6px);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
-.modal.active{display:flex}
-.modal-card{background:linear-gradient(145deg,#131c2e,#1a263d) !important;border:2px solid #38bdf8 !important;border-radius:24px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.9)}
-.modal-card h2{color:#38bdf8 !important;margin-bottom:14px;font-size:20px;text-align:center}
-
-.tab-bar{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
-.tab-btn{flex:1;min-width:80px;padding:12px 6px;background:#070a12 !important;border:1px solid rgba(255,255,255,0.08) !important;color:#94a3b8 !important;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700}
-.tab-btn.active{background:linear-gradient(135deg,#0ea5e9,#0284c7) !important;color:#fff !important;border-color:transparent !important}
-
-.wake-lock-status{position:fixed;bottom:10px;left:10px;font-size:11px;color:#94a3b8;z-index:5;background:rgba(11,15,25,0.9);padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08)}
-.connection-status{position:fixed;top:60px;left:50%;transform:translateX(-50%);padding:6px 18px;border-radius:20px;font-size:13px;z-index:100;display:none}
-.connection-status.online{background:#059669 !important;color:#fff !important;display:block}
-.connection-status.offline{background:#e11d48 !important;color:#fff !important;display:block}
+.rec-controls{display:none;gap:6px;margin-top:8px}
+.rec-controls button{flex:1;padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer}
+.rec-stop{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.rec-cancel{background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff}
+.rec-status{display:none;align-items:center;gap:8px;padding:8px;background:#070a12;border-radius:8px;margin-top:8px;font-size:13px;color:#fbbf24}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:#f43f5e;animation:pulse .6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.bus-card{background:#070a12;border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,.08)}
+.play-audio{background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+.msg-row{display:flex;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
 </style>
 </head>
 <body>
+
 <div class="header">
-  <div class="title">🚐 浚鍵管理有限公司 · 西鐵小巴系統</div>
-  <div class="dev">大棠黃泥墩 ⇄ 元朗市中心快線</div>
-  <button class="voice-btn" id="global-voice-btn">🔊</button>
+  <h1>🧍 乘客專用端</h1>
+  <a href="index.html">← 首頁</a>
 </div>
-<div class="connection-status" id="connection-status"></div>
 
-<!-- 登入選擇彈窗 -->
-<div class="modal" id="login-modal">
-  <div class="modal-card">
-    <h2>🔐 系統登入</h2>
-    <div id="login-choice">
-      <button class="btn btn-primary" id="login-google">🅶 管理員 Google 登入</button>
-      <button class="btn btn-driver" id="login-driver">🚏 司機 / 管理員登入</button>
-      <button class="btn btn-portal" id="login-passenger">🧍 乘客登入</button>
+<div class="container">
+
+  <!-- 登入 -->
+  <div id="login-view" class="card">
+    <div class="card-title">🔐 乘客登入</div>
+    <label>電話號碼 (8 位數字)</label>
+    <input type="tel" id="p-phone" maxlength="8" placeholder="例如：91234567" inputmode="numeric">
+    <label>您的姓名</label>
+    <input type="text" id="p-name" placeholder="例如：陳先生" maxlength="20">
+    <button class="btn btn-primary" onclick="doLogin()">立即登入</button>
+    <div id="login-err" style="color:#f43f5e;font-size:13px;text-align:center;margin-top:8px"></div>
+  </div>
+
+  <!-- 主介面 -->
+  <div id="main-view" style="display:none">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px">
+      <div>
+        <div id="p-welcome" style="font-size:15px;font-weight:700;color:#fff">👤</div>
+        <div id="p-phone-disp" style="font-size:12px;color:#64748b"></div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()">登出</button>
     </div>
-    <div id="driver-login-form" style="display:none">
-      <label>司機／管理員電話或電郵</label>
-      <input type="text" id="driver-identifier" placeholder="例如：91234567">
-      <button class="btn btn-success" id="driver-login-btn">確認登入</button>
-      <button class="btn btn-secondary" id="driver-login-back">返回</button>
-      <div id="driver-login-error" style="color:#e11d48;font-size:14px;margin-top:8px;text-align:center"></div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-booking" onclick="switchTab('booking')">🎫 留位</button>
+      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📋 我的預約</button>
+      <button class="tab-btn" id="tab-bus" onclick="switchTab('bus')">🚐 追蹤小巴</button>
     </div>
-    <div id="passenger-login-form" style="display:none">
-      <label>電話號碼（8 位數字）</label>
-      <input type="tel" id="passenger-phone" placeholder="例如：91234567" maxlength="8" inputmode="numeric">
-      <label>您的姓名</label>
-      <input type="text" id="passenger-name" placeholder="例如：陳先生" maxlength="20">
-      <button class="btn btn-portal" id="passenger-login-btn">確認登入</button>
-      <button class="btn btn-secondary" id="passenger-login-back">返回</button>
-      <div id="passenger-login-error" style="color:#e11d48;font-size:14px;margin-top:8px;text-align:center"></div>
+
+    <!-- 留位面板 -->
+    <div id="panel-booking">
+      <div class="card">
+        <div class="card-title">🌅 早上固定班次</div>
+        <div id="shift-morning"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌆 傍晚固定班次</div>
+        <div id="shift-evening"></div>
+      </div>
     </div>
-    <button class="btn btn-secondary" id="login-cancel" style="margin-top:10px">取消</button>
+
+    <!-- 我的預約 -->
+    <div id="panel-mine" style="display:none">
+      <div class="card">
+        <div class="card-title">📋 我的預約與車牌</div>
+        <div id="my-bookings"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💬 向司機發送訊息</div>
+        <label>選擇車輛</label>
+        <select id="msg-bus"><option value="">-- 請選擇 --</option></select>
+        <div class="row" style="margin:0">
+          <input id="msg-input" placeholder="輸入訊息…" style="margin:0">
+          <button class="btn btn-primary" onclick="sendMsg()" style="width:auto;flex:0 0 auto;padding:12px 18px;margin:0">發送</button>
+        </div>
+        <button class="btn btn-warn" id="btn-record" style="margin-top:8px">🎤 錄製語音訊息</button>
+        <div id="record-controls" class="rec-controls">
+          <button class="rec-stop" onclick="stopRecord()">✅ 發送語音</button>
+          <button class="rec-cancel" onclick="cancelRecord()">❌ 取消</button>
+        </div>
+        <div id="rec-status" class="rec-status"><div class="rec-dot"></div><span>錄音中... <span id="rec-time">0</span>s</span></div>
+      </div>
+    </div>
+
+    <!-- 追蹤小巴 -->
+    <div id="panel-bus" style="display:none">
+      <div class="card">
+        <div class="card-title">🚐 線上營運小巴</div>
+        <div id="bus-list">載入中…</div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- 主大堂首頁 -->
-<div id="view-lobby" class="view active">
-  <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="card-title" style="margin:0; border:none;">📋 系統使用說明</div>
-      <button class="btn btn-outline btn-sm" onclick="speakUsageGuide()">🔊 播放語音說明</button>
-    </div>
-    <div style="font-size:14px;line-height:1.8;color:#94a3b8;margin-top:10px">
-      🚏 <strong>司機端</strong>：登入後設定車牌與認領當值班次，接收全功能彈窗通知與聲音警報。<br>
-      🧍 <strong>乘客端</strong>：登入後可查看即時車輛位置、留位、語音輸入及回報「我已上車」。<br>
-      🎙️ <strong>對講機</strong>：司機與管理員即時語音及文字通訊。
-    </div>
-  </div>
-  <button class="btn btn-portal" id="btn-passenger">🧍 進入乘客專用端</button>
-  <button class="btn btn-driver" id="btn-driver">🚏 進入司機專業端</button>
-  <button class="btn btn-warn" id="btn-admin-panel" style="display:none">👑 總管後台</button>
-  <button class="btn btn-secondary" id="btn-logout" style="display:none">🚪 登出帳號</button>
-  <div class="card" style="text-align:center">
-    <div style="font-size:15px;font-weight:700;color:#fbbf24;margin-bottom:6px">☕ 支持開發者</div>
-    <div id="fps-code" style="background:#070a12;padding:12px;border-radius:10px;display:inline-block;font-size:16px;color:#fbbf24;cursor:pointer;border:1px solid rgba(251,191,36,0.3)">轉數快 (FPS)：122891914</div>
-  </div>
-</div>
-
-<div id="toast" class="toast"></div>
-<div class="wake-lock-status" id="wake-lock-status">🔋 屏幕鎖: 未啟用</div>
+<div class="toast" id="toast"></div>
 
 <script>
-console.log('🔵 浚鍵西鐵小巴系統 v5.5 (尊貴黑金版) 載入完畢');
+/* ============================================================
+   乘客專用端
+   ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyAX7Zy5br1ozGOGxHvDeFNY-Ldcjjw8Qgc",
   authDomain: "triple-login-version.firebaseapp.com",
@@ -149,37 +166,411 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 3000);
+const SM = ['06:20','06:30','06:40','06:50'];
+const SE = ['18:15','18:30','18:45','19:00'];
+
+let currentPassenger = null;
+let activeTab = 'booking';
+let busListRef = null;
+let myBookingRef = null;
+let shiftClaimRef = null;
+let claimsCache = {};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const getToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const getDir = t => parseInt(t.split(':')[0]) < 12 ? 'morning' : 'evening';
+const getOrigL = t => getDir(t) === 'morning' ? '🌅 大棠黃泥墩開出' : '🌆 元朗港鐵站 H 出口開出';
+const now = () => Date.now();
+
+function toast(m, d=3000){
+  const t = $('toast');
+  t.textContent = m; t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), d);
 }
 
-function speakUsageGuide() {
-  if ('speechSynthesis' in window) {
-    const u = new SpeechSynthesisUtterance('歡迎使用浚鍵管理有限公司西鐵小巴系統。');
-    u.lang = 'zh-HK';
-    window.speechSynthesis.speak(u);
+function playAudio(b64){
+  if (!b64) return;
+  try { const a = new Audio('data:audio/webm;base64,' + b64); a.volume = 1; a.play().catch(()=>{}); } catch(e){}
+}
+
+/* ============ 錄音 ============ */
+const RecorderManager = {
+  instances: {},
+  create(id, onSend){
+    if (this.instances[id]) return this.instances[id];
+    let mr=null, stream=null, chunks=[], timer=null, sec=0, isRec=false;
+    const self = { id };
+    self.start = () => {
+      if (isRec) return;
+      isRec = true;
+      navigator.mediaDevices.getUserMedia({ audio:true }).then(s => {
+        stream = s;
+        try { mr = new MediaRecorder(s, { audioBitsPerSecond: 24000, mimeType:'audio/webm;codecs=opus' }); }
+        catch(e){ mr = new MediaRecorder(s, { audioBitsPerSecond: 24000 }); }
+        chunks = [];
+        mr.ondataavailable = e => chunks.push(e.data);
+        mr.start();
+        sec = 0;
+        const st = $(id + '-rec-status'); if (st) st.style.display = 'flex';
+        const tm = $(id + '-rec-time'); if (tm) tm.textContent = '0';
+        timer = setInterval(() => {
+          sec++;
+          if (tm) tm.textContent = sec;
+          if (sec >= 30) self.stop();
+        }, 1000);
+      }).catch(() => { toast('❌ 無法開啟咪高峰'); isRec = false; });
+    };
+    self.stop = () => {
+      if (!isRec) return;
+      isRec = false;
+      if (timer) { clearInterval(timer); timer = null; }
+      if (mr && mr.state === 'recording') {
+        mr.onstop = () => {
+          const blob = new Blob(chunks, { type:'audio/webm' });
+          const reader = new FileReader();
+          reader.onload = () => { if (onSend) onSend(reader.result.split(',')[1]); };
+          reader.readAsDataURL(blob);
+          if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        };
+        mr.stop();
+      }
+      const st = $(id + '-rec-status'); if (st) st.style.display = 'none';
+    };
+    self.cancel = () => {
+      if (!isRec) return;
+      isRec = false;
+      if (timer) { clearInterval(timer); timer = null; }
+      if (mr && mr.state === 'recording') mr.stop();
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+      const st = $(id + '-rec-status'); if (st) st.style.display = 'none';
+      toast('❌ 錄音已取消');
+    };
+    self.isRecording = () => isRec;
+    this.instances[id] = self;
+    return self;
+  },
+  get(id){ return this.instances[id]; }
+};
+
+/* ============ 登入 ============ */
+async function doLogin(){
+  const phone = $('p-phone').value.trim();
+  const name = $('p-name').value.trim();
+  if (!/^\d{8}$/.test(phone)) { $('login-err').textContent = '請輸入 8 位數字電話號碼'; return; }
+  if (!name) { $('login-err').textContent = '請輸入姓名'; return; }
+  $('login-err').textContent = '登入中...';
+  try {
+    await auth.signInAnonymously();
+    currentPassenger = { uid: auth.currentUser.uid, phone, name };
+    localStorage.setItem('pax_session', JSON.stringify(currentPassenger));
+    await db.ref('booking_passengers/' + phone).update({ name, phone, lastLogin: now() });
+    initUI();
+    toast('✅ 登入成功，歡迎 ' + name);
+  } catch(e) { $('login-err').textContent = '登入失敗：' + e.message; }
+}
+
+function doLogout(){
+  if (!confirm('確定登出？')) return;
+  currentPassenger = null;
+  localStorage.removeItem('pax_session');
+  if (myBookingRef) { try { myBookingRef.off(); } catch(e){} }
+  if (shiftClaimRef) { try { shiftClaimRef.off(); } catch(e){} }
+  if (busListRef) { try { busListRef.off(); } catch(e){} }
+  location.reload();
+}
+
+function initUI(){
+  if (!currentPassenger) { $('login-view').style.display = 'block'; $('main-view').style.display = 'none'; return; }
+  $('login-view').style.display = 'none';
+  $('main-view').style.display = 'block';
+  $('p-welcome').textContent = '👤 ' + currentPassenger.name;
+  $('p-phone-disp').textContent = currentPassenger.phone;
+  loadShiftClaims();
+  loadMyBookings();
+  loadBusList();
+  setupRecorder();
+}
+
+/* ============ Tab ============ */
+function switchTab(tab){
+  activeTab = tab;
+  ['booking','mine','bus'].forEach(k => {
+    const b = $('tab-' + k);
+    const p = $('panel-' + k);
+    if (b) b.className = 'tab-btn' + (k === tab ? ' active' : '');
+    if (p) p.style.display = (k === tab ? 'block' : 'none');
+  });
+  if (tab === 'booking') loadShiftClaims();
+  if (tab === 'mine') loadMyBookings();
+  if (tab === 'bus') loadBusList();
+}
+
+/* ============ 班次認領（乘客端顯示車牌） ============ */
+function loadShiftClaims(){
+  if (shiftClaimRef) { try { shiftClaimRef.off(); } catch(e){} }
+  shiftClaimRef = db.ref('booking_seats/' + getToday());
+  shiftClaimRef.on('value', s => {
+    claimsCache = s.val() || {};
+    renderShifts();
+  });
+}
+
+function renderShifts(){
+  const m = $('shift-morning');
+  const e = $('shift-evening');
+  if (m) m.innerHTML = SM.map(tm => renderShiftCard(tm)).join('');
+  if (e) e.innerHTML = SE.map(tm => renderShiftCard(tm)).join('');
+}
+
+function renderShiftCard(tm){
+  const hhmm = tm.replace(':','');
+  const claim = claimsCache[hhmm] || {};
+  const plate = claim.plate || null;
+  return `<div class="pax-card" onclick="openBooking('${tm}')">
+    <div>
+      <div class="time">${tm}</div>
+      <div class="info">${getOrigL(tm)}</div>
+      ${plate ? `<div class="plate">🚐 負責車牌：${esc(plate)}</div>` : '<div class="info" style="color:#94a3b8">車輛待定</div>'}
+    </div>
+    <div style="text-align:right">
+      <div class="num">→</div>
+      <div style="font-size:11px;color:#94a3b8">撳此留位</div>
+    </div>
+  </div>`;
+}
+
+/* ============ 留位表單 ============ */
+function openBooking(tm){
+  const c = $('panel-booking');
+  const plate = (claimsCache[tm.replace(':','')] || {}).plate;
+  c.innerHTML = `
+    <div class="card">
+      <button class="btn btn-outline btn-sm" onclick="switchTab('booking')">← 返回</button>
+    </div>
+    <div class="card">
+      <div class="card-title">🎫 ${tm} 班次留位</div>
+      <div style="font-size:13px;color:#94a3b8;margin-bottom:8px">${getOrigL(tm)}</div>
+      <div style="font-size:14px;color:#34d399;font-weight:700;margin-bottom:12px">
+        ${plate ? '🚐 負責車牌：' + esc(plate) : '⚠️ 車輛待司機認領'}
+      </div>
+      <label>姓名</label>
+      <input type="text" id="bk-name" value="${esc(currentPassenger.name)}">
+      <label>人數</label>
+      <select id="bk-seats"><option value="1">1 位</option><option value="2">2 位</option></select>
+      <label>📍 上車地點</label>
+      <input type="text" id="bk-pickup" placeholder="例如：大棠村迴旋處" maxlength="40">
+      <button class="btn btn-success" onclick="submitBooking('${tm}')">📩 送出留位申請</button>
+    </div>
+  `;
+}
+
+async function submitBooking(tm){
+  const name = $('bk-name').value.trim();
+  const seats = parseInt($('bk-seats').value);
+  const pickup = $('bk-pickup').value.trim();
+  if (!name || !pickup) return toast('請填寫姓名與上車地點');
+  const today = getToday();
+  const sid = today + '_' + tm.replace(':','');
+
+  try {
+    // 檢查是否已有預約
+    const snap = await db.ref('booking/' + today).once('value');
+    const all = snap.val() || {};
+    const dup = Object.values(all).find(b =>
+      b.scheduleId === sid &&
+      b.passengerPhone === currentPassenger.phone &&
+      b.status !== 'cancelled' && b.status !== 'rejected'
+    );
+    if (dup) return toast('⚠️ 你已經預約咗呢個班次');
+
+    await db.ref('booking/' + today).push({
+      scheduleId: sid,
+      date: today,
+      time: tm,
+      passengerName: name,
+      passengerPhone: currentPassenger.phone,
+      seats, pickupLocation: pickup,
+      status: 'pending',
+      createdAt: now()
+    });
+    toast('✅ 留位申請已送出，等待司機確認');
+    setTimeout(() => switchTab('mine'), 800);
+  } catch(e){ toast('❌ ' + e.message); }
+}
+
+/* ============ 我的預約 ============ */
+function loadMyBookings(){
+  if (myBookingRef) { try { myBookingRef.off(); } catch(e){} }
+  const today = getToday();
+  myBookingRef = db.ref('booking/' + today);
+  myBookingRef.on('value', snap => {
+    const all = snap.val() || {};
+    const mine = Object.entries(all)
+      .filter(([k, b]) => b.passengerPhone === currentPassenger.phone &&
+        b.status !== 'cancelled' && b.status !== 'rejected')
+      .map(([k, b]) => ({ id: k, ...b }));
+    renderMyBookings(mine);
+  });
+}
+
+function renderMyBookings(list){
+  const c = $('my-bookings');
+  if (!list.length) { c.innerHTML = '<div style="text-align:center;color:#64748b;padding:16px;font-size:13px">你今日暫無預約記錄</div>'; return; }
+  list.sort((a, b) => a.time.localeCompare(b.time));
+  let h = '';
+  list.forEach(b => {
+    const cls = b.status;
+    const badge = b.status === 'pending' ? '<span class="badge badge-yellow">⏳ 待確認</span>'
+      : b.status === 'reserved' ? '<span class="badge badge-green">✅ 已確認</span>'
+      : b.status === 'boarded' ? '<span class="badge badge-blue">🚐 已上車</span>'
+      : '<span class="badge">' + b.status + '</span>';
+    h += '<div class="my-booking ' + cls + '">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center">';
+    h += '<div style="font-size:15px;font-weight:700;color:#fff">' + b.time + ' 班次 (' + (b.seats||1) + '位)</div>';
+    h += '<div>' + badge + '</div></div>';
+    h += '<div style="font-size:12px;color:#94a3b8;margin-top:4px">' + getOrigL(b.time) + '</div>';
+    if (b.pickupLocation) h += '<div style="font-size:12px;color:#34d399;margin-top:2px">📍 ' + esc(b.pickupLocation) + '</div>';
+    if (b.confirmedBy) h += '<div style="font-size:13px;color:#38bdf8;font-weight:700;margin-top:4px">🚐 負責車牌：' + esc(b.confirmedBy) + '</div>';
+    h += '<div style="display:flex;gap:6px;margin-top:8px">';
+    if (b.status === 'reserved') {
+      h += '<button class="btn btn-success btn-sm" style="flex:1" onclick="paxBoarded(\'' + b.id + '\',\'' + b.date + '\')">🚐 我已上車</button>';
+    }
+    h += '<button class="btn btn-outline btn-sm" style="flex:1" onclick="paxCancel(\'' + b.id + '\',\'' + b.date + '\')">取消預約</button>';
+    h += '</div></div>';
+  });
+  c.innerHTML = h;
+}
+
+async function paxBoarded(id, date){
+  if (!confirm('確定你已上車？')) return;
+  try {
+    await db.ref('booking/' + date + '/' + id).update({ status:'boarded', boardedAt: now() });
+    toast('✅ 已記錄上車');
+  } catch(e){ toast('❌ ' + e.message); }
+}
+
+async function paxCancel(id, date){
+  if (!confirm('確定取消預約？')) return;
+  try {
+    await db.ref('booking/' + date + '/' + id).update({ status:'cancelled', cancelledAt: now() });
+    toast('已取消');
+  } catch(e){ toast('❌ ' + e.message); }
+}
+
+/* ============ 追蹤小巴 ============ */
+function loadBusList(){
+  if (busListRef) { try { busListRef.off(); } catch(e){} }
+  busListRef = db.ref('van/active_buses');
+  busListRef.on('value', snap => {
+    const d = snap.val() || {};
+    const nw = now();
+    const buses = Object.entries(d)
+      .filter(([p, b]) => nw - (b.lastUpdate||0) < 300000)
+      .map(([p, b]) => ({ plate: p, ...b }));
+    const list = $('bus-list');
+    const sel = $('msg-bus');
+    if (!buses.length) {
+      list.innerHTML = '<div style="text-align:center;color:#64748b;padding:16px;font-size:13px">目前沒有在線小巴</div>';
+    } else {
+      list.innerHTML = buses.map(b => `
+        <div class="bus-card">
+          <div style="font-size:18px;font-weight:800;color:#38bdf8">🚐 ${esc(b.plate)}</div>
+          <div style="font-size:13px;color:#94a3b8;margin-top:4px">${esc(b.currentStation || '未知')} · 👥 ${b.passengerCount || 0}人</div>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">下一站：${esc(b.nextStation || '終點')}</div>
+        </div>
+      `).join('');
+    }
+    if (sel) {
+      sel.innerHTML = '<option value="">-- 請選擇 --</option>' +
+        buses.map(b => `<option value="${esc(b.plate)}">🚐 ${esc(b.plate)}</option>`).join('');
+    }
+  });
+}
+
+async function sendMsg(){
+  const bus = $('msg-bus').value;
+  const text = $('msg-input').value.trim();
+  if (!bus) return toast('請先選擇車輛');
+  if (!text) return toast('請輸入訊息');
+  await db.ref('van/messages').push({
+    busId: bus,
+    senderUid: currentPassenger.uid,
+    senderIdentifier: currentPassenger.name + '(' + currentPassenger.phone + ')',
+    text,
+    timestamp: now(),
+    type: 'text'
+  });
+  $('msg-input').value = '';
+  toast('✅ 已發送');
+}
+
+/* 錄音 */
+function setupRecorder(){
+  RecorderManager.create('', b64 => {
+    const bus = $('msg-bus').value;
+    if (!bus) { toast('請先選擇車輛'); return; }
+    db.ref('van/messages').push({
+      busId: bus,
+      senderUid: currentPassenger.uid,
+      senderIdentifier: currentPassenger.name + '(' + currentPassenger.phone + ')',
+      audio: b64,
+      timestamp: now(),
+      type: 'audio'
+    }).then(() => toast('✅ 語音已發送'));
+  });
+  $('btn-record').addEventListener('click', () => {
+    const bus = $('msg-bus').value;
+    if (!bus) return toast('請先選擇車輛');
+    const rec = RecorderManager.get('');
+    if (rec.isRecording()) return;
+    rec.start();
+    $('record-controls').style.display = 'flex';
+    $('btn-record').style.display = 'none';
+  });
+}
+function stopRecord(){
+  const rec = RecorderManager.get('');
+  if (rec && rec.isRecording()) rec.stop();
+  $('record-controls').style.display = 'none';
+  $('btn-record').style.display = 'block';
+}
+function cancelRecord(){
+  const rec = RecorderManager.get('');
+  if (rec && rec.isRecording()) rec.cancel();
+  $('record-controls').style.display = 'none';
+  $('btn-record').style.display = 'block';
+}
+
+/* ============ 啟動 ============ */
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('pax_session');
+  if (saved) {
+    try {
+      currentPassenger = JSON.parse(saved);
+      auth.onAuthStateChanged(u => {
+        if (u) { currentPassenger.uid = u.uid; }
+        initUI();
+      });
+    } catch(e){ initUI(); }
+  } else {
+    initUI();
   }
-}
-
-document.getElementById('btn-passenger').addEventListener('click', () => {
-  document.getElementById('login-modal').classList.add('active');
 });
 
-document.getElementById('btn-driver').addEventListener('click', () => {
-  document.getElementById('login-modal').classList.add('active');
-});
-
-document.getElementById('login-cancel').addEventListener('click', () => {
-  document.getElementById('login-modal').classList.remove('active');
-});
-
-document.getElementById('fps-code').addEventListener('click', () => {
-  navigator.clipboard.writeText('122891914').then(() => showToast('✅ 已複製轉數快號碼：122891914'));
-});
+/* 綁定 */
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+window.switchTab = switchTab;
+window.openBooking = openBooking;
+window.submitBooking = submitBooking;
+window.paxBoarded = paxBoarded;
+window.paxCancel = paxCancel;
+window.sendMsg = sendMsg;
+window.stopRecord = stopRecord;
+window.cancelRecord = cancelRecord;
+window.playAudio = playAudio;
 </script>
 </body>
 </html>
