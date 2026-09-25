@@ -8,12 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-:root{
-  --bg:#0a0805; --card:#1a150d; --card2:#252017; --line:rgba(212,175,55,.18);
-  --gold:#d4af37; --gold-b:#f5d76e; --gold-d:#8b6914;
-  --txt:#f5f0e1; --txt2:#a89b7a;
-  --green:#22c55e; --red:#ef4444; --yellow:#fbbf24;
-}
+:root{--bg:#0a0805;--card:#1a150d;--card2:#252017;--line:rgba(212,175,55,.18);--gold:#d4af37;--gold-b:#f5d76e;--gold-d:#8b6914;--txt:#f5f0e1;--txt2:#a89b7a;--green:#22c55e;--red:#ef4444;--yellow:#fbbf24}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#0a0805,#14100a);color:var(--txt);min-height:100vh;padding-bottom:20px}
 .header{position:sticky;top:0;background:linear-gradient(135deg,#1a150d,#0a0805);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.6)}
@@ -60,9 +55,9 @@ label{display:block;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weig
 .pending-item .name{font-size:15px;font-weight:700;color:var(--txt)}
 .pending-item .info{font-size:12px;color:var(--txt2);margin-top:3px}
 .pending-item .actions{display:flex;gap:6px;margin-top:8px}
-.pending-item .actions button{flex:1;padding:8px;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;color:#fff}
+.pending-item .actions button{flex:1;padding:8px;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;color:#fff;font-family:inherit}
 .reserved-item{background:rgba(34,197,94,.06);border-left:3px solid var(--green);border-radius:8px;padding:10px;margin-bottom:6px}
-/* 座位視圖 */
+.loop-item{background:rgba(56,189,248,.06);border-left:3px solid #38bdf8;border-radius:8px;padding:10px;margin-bottom:6px}
 .seat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 .seat{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;font-size:11px;text-align:center;border:1px solid var(--line);background:#0a0805;color:var(--txt2);overflow:hidden}
 .seat.taken{background:linear-gradient(135deg,#f5d76e,#d4af37);color:#1a150d;border-color:transparent;font-weight:700;box-shadow:0 0 12px rgba(212,175,55,.3)}
@@ -82,7 +77,7 @@ label{display:block;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weig
 @keyframes goldPulse{from{box-shadow:0 0 20px rgba(212,175,55,.4)}to{box-shadow:0 0 50px rgba(212,175,55,.9)}}
 .notif-body{font-size:15px;line-height:1.6;color:var(--txt);margin:14px 0}
 .rec-controls{display:none;gap:6px;margin-top:8px}
-.rec-controls button{flex:1;padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;color:#fff}
+.rec-controls button{flex:1;padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;color:#fff;font-family:inherit}
 .rec-stop{background:linear-gradient(135deg,#16a34a,#15803d)}
 .rec-cancel{background:linear-gradient(135deg,#dc2626,#991b1b)}
 .rec-status{display:none;align-items:center;gap:8px;padding:8px;background:#0a0805;border-radius:8px;margin-top:8px;font-size:13px;color:var(--gold-b);border:1px solid var(--line)}
@@ -109,7 +104,6 @@ label{display:block;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weig
 </div>
 
 <div class="container" id="app">
-
   <div id="login-view" class="card">
     <div class="card-title">🔐 司機 / 管理員登入</div>
     <label>電話號碼 / 電郵</label>
@@ -129,7 +123,6 @@ label{display:block;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weig
       <button class="tab" id="tab-admin" style="display:none" onclick="switchTab('admin')">👑 後台</button>
     </div>
 
-    <!-- 當值 -->
     <div id="tab-duty">
       <div class="card status-card">
         <div style="font-size:13px;color:var(--txt2)" id="d-driver-info">未設定</div>
@@ -164,7 +157,6 @@ label{display:block;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weig
       </div>
     </div>
 
-    <!-- 班次認領 -->
     <div id="tab-claim" style="display:none">
       <div class="card">
         <div class="card-title">🌅 早上固定班次</div>
@@ -176,21 +168,23 @@ label{display:block;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weig
       </div>
       <div class="card">
         <div class="card-title">🔄 循環線時段</div>
-        <div style="font-size:13px;color:var(--txt2);line-height:1.7">07:00 - 18:00 為循環線模式，無固定班次，乘客可直接於循環線留位（無需班次認領）。</div>
+        <div style="font-size:13px;color:var(--txt2);line-height:1.7">07:00 - 18:00 為循環線模式，無固定班次。乘客可直接喺「留位總覽」下方循環線區域留位。</div>
       </div>
     </div>
 
-    <!-- 留位總覽（座位視圖） -->
     <div id="tab-seats" style="display:none">
       <div class="card">
-        <div class="card-title">📋 留位總覽 · 座位對數</div>
+        <div class="card-title">📋 固定班次座位圖</div>
         <label>選擇班次</label>
         <select id="seat-shift-select" onchange="renderSeatView()"><option value="">-- 請先認領班次 --</option></select>
         <div id="seat-view"></div>
       </div>
+      <div class="card">
+        <div class="card-title">🔄 循環線留位 <span id="loop-pending-count" class="badge badge-yellow">0 待確認</span></div>
+        <div id="loop-bookings"></div>
+      </div>
     </div>
 
-    <!-- 訊息 -->
     <div id="tab-msg" style="display:none">
       <div class="card">
         <div class="card-title">💬 訊息</div>
@@ -208,7 +202,6 @@ label{display:block;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weig
       </div>
     </div>
 
-    <!-- 對講機 -->
     <div id="tab-walkie" style="display:none">
       <div class="card">
         <div class="card-title">🎙️ 對講機</div>
@@ -224,7 +217,6 @@ label{display:block;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weig
       </div>
     </div>
 
-    <!-- 管理員後台 -->
     <div id="tab-admin" style="display:none">
       <div class="card">
         <div class="card-title">👑 總管後台</div>
@@ -234,7 +226,7 @@ label{display:block;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weig
           <div class="stat-box"><div class="label">訊息</div><div class="value" id="ad-msgs">0</div></div>
         </div>
       </div>
-      <div class="card"><div class="admin-section"><h4>🚐 在線車輛詳情</h4><div class="admin-list" id="ad-bus-list"></div></div></div>
+      <div class="card"><div class="admin-section" style="border:none;padding:0;margin:0"><h4>🚐 在線車輛詳情</h4><div class="admin-list" id="ad-bus-list"></div></div></div>
       <div class="card"><div class="admin-section" style="border:none;padding:0;margin:0"><h4>📊 今日留位總覽</h4><div class="admin-list" id="ad-stats"></div></div></div>
       <div class="card"><div class="admin-section" style="border:none;padding:0;margin:0"><h4>🎫 班次認領總覽</h4><div class="admin-list" id="ad-claim-list"></div></div></div>
       <div class="card"><div class="admin-section" style="border:none;padding:0;margin:0"><h4>💬 最近訊息記錄</h4><div class="admin-list" id="ad-msg-list"></div></div></div>
@@ -288,163 +280,170 @@ const ROUTES = {
           back:{name:["元朗港鐵站","朗和路","鳳翔路","合益路","富達廣場","蝶翠峰","禮修村","深涌村","天龍花園","田寮村","崇正新村","水喉頭","菜站","麥園","老圍","新路口","南坑村","棠景花園","南坑排","新樓","教堂","振南苑","山咀","大棠村","金龍花園","大棠山路","巴士站","宏基","大棠黃泥墩"]}}
 };
 
-let currentUser = {uid:null,identifier:null,role:null};
-let isAdmin = false;
-let voiceEnabled = true;
-let driverData = {mode:'busy',direction:0,stationIndex:0,passengerCount:0,isActive:false,plate:null,carSeats:16,isFull:false};
+let currentUser={uid:null,identifier:null,role:null};
+let isAdmin=false;
+let voiceEnabled=true;
+let driverData={mode:'busy',direction:0,stationIndex:0,passengerCount:0,isActive:false,plate:null,carSeats:16,isFull:false};
 
-let knownBookingIds = new Set();
-let knownMsgKeys = new Set();
-let knownWalkieKeys = new Set();
-let knownBoardedIds = new Set();
-let firstBookingLoad = true, firstMsgLoad = true, firstWalkieLoad = true;
+/* ===== 通知記錄集合（修復核心） ===== */
+const notifiedBookingIds = new Set();   // 已通知過的固定班次留位 ID
+const notifiedLoopIds = new Set();      // 已通知過的循環線留位 ID
+const notifiedMsgKeys = new Set();      // 已通知過的訊息 key
+const notifiedWalkieKeys = new Set();   // 已通知過的對講機 key
 
-let busRef=null, bookingRef=null, msgRef=null, walkieRef=null, shiftRef=null;
-let claimsCache = {};
-let bookingsCache = {}, loopCache = {};
+let busRef=null, bookingRef=null, loopRef=null, msgRef=null, walkieRef=null, shiftRef=null;
+let claimsCache={};
+let bookingsCache={};
+let loopCache={};
 
-const $ = id => document.getElementById(id);
-const toast = (m, d=3000) => { const t=$('toast'); if(!t)return; t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),d); };
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const getToday = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
-const now = () => Date.now();
-const getSid = (date,time) => date+'_'+time.replace(':','');
-const getDir = t => parseInt(t.split(':')[0]) < 12 ? 'morning' : 'evening';
-const getOrigL = t => getDir(t)==='morning' ? '🌅 大棠黃泥墩開出' : '🌆 元朗港鐵站 H 出口開出';
-const isLoopTime = () => { const h = new Date().getHours(); return h >= LOOP_START && h < LOOP_END; };
+const $=id=>document.getElementById(id);
+const toast=(m,d=3000)=>{const t=$('toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),d);};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const getToday=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+const now=()=>Date.now();
+const getSid=(date,time)=>date+'_'+time.replace(':','');
+const getDir=t=>parseInt(t.split(':')[0])<12?'morning':'evening';
+const getOrigL=t=>getDir(t)==='morning'?'🌅 大棠黃泥墩開出':'🌆 元朗港鐵站 H 出口開出';
 
-function beep(hi=false){ try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(),g=ctx.createGain(); o.frequency.value=hi?1320:880; g.gain.value=.35; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+.2); }catch(e){} }
-function playAlert(){ beep(false); setTimeout(()=>beep(true),260); setTimeout(()=>beep(false),520); }
-function vibrate(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms||100); }catch(e){} }
+/* 聲音 */
+function beep(hi=false){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=hi?1320:880;g.gain.value=.35;o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.2);}catch(e){}}
+function playAlert(){beep(false);setTimeout(()=>beep(true),260);setTimeout(()=>beep(false),520);}
+function vibrate(ms){try{if(navigator.vibrate)navigator.vibrate(ms||100);}catch(e){}}
 
-let speakQueue=[], speakBusy=false;
+/* 粵語 */
+let speakQueue=[],speakBusy=false;
 function speak(text){
-  if(!voiceEnabled||!window.speechSynthesis||!text) return;
-  if(speakQueue.length>3) speakQueue.shift();
-  speakQueue.push(text); processSpeak();
+  if(!voiceEnabled||!window.speechSynthesis||!text)return;
+  if(speakQueue.length>3)speakQueue.shift();
+  speakQueue.push(text);processSpeak();
 }
 function processSpeak(){
-  if(speakBusy||!speakQueue.length) return;
+  if(speakBusy||!speakQueue.length)return;
   speakBusy=true;
   const text=speakQueue.shift();
   const u=new SpeechSynthesisUtterance(text);
-  u.lang='zh-HK'; u.rate=.9; u.volume=1;
+  u.lang='zh-HK';u.rate=.9;u.volume=1;
   const voices=window.speechSynthesis.getVoices();
   const v=voices.find(x=>x.lang==='zh-HK')||voices.find(x=>x.lang.startsWith('zh'));
-  if(v) u.voice=v;
-  u.onend=u.onerror=()=>{ speakBusy=false; setTimeout(processSpeak,80); };
+  if(v)u.voice=v;
+  u.onend=u.onerror=()=>{speakBusy=false;setTimeout(processSpeak,80);};
   window.speechSynthesis.speak(u);
 }
 function speakGuide(){
-  speak('歡迎使用浚鍵管理有限公司司機專業端。請先輸入車牌開始當值。然後到班次認領區，撳掣認領你負責嘅班次。之後可以喺留位總覽睇到座位狀態。收到乘客留位或訊息嘅時候，系統會彈出通知並發出聲音。');
+  speak('歡迎使用浚鍵管理有限公司司機專業端。請先輸入車牌開始當值。然後到班次認領區，撳掣認領你負責嘅班次。之後可以喺留位總覽睇到座位狀態同循環線留位。收到乘客留位或訊息嘅時候，系統會彈出通知並發出聲音。');
 }
 
-let notifQueue=[], notifShowing=false;
+/* 通知彈窗 */
+let notifQueue=[],notifShowing=false;
 function showNotif(title,bodyHTML,speakText){
-  notifQueue.push({title,bodyHTML,speakText}); processNotifQueue();
+  notifQueue.push({title,bodyHTML,speakText});processNotifQueue();
 }
 function processNotifQueue(){
-  if(notifShowing||!notifQueue.length) return;
+  if(notifShowing||!notifQueue.length)return;
   notifShowing=true;
   const n=notifQueue.shift();
   $('notif-title').textContent=n.title;
   $('notif-body').innerHTML=n.bodyHTML;
   $('notif-modal').classList.add('active');
-  playAlert(); vibrate([300,100,300]);
-  if(n.speakText) speak(n.speakText);
+  playAlert();vibrate([300,100,300]);
+  if(n.speakText)speak(n.speakText);
 }
-function closeNotif(){ $('notif-modal').classList.remove('active'); notifShowing=false; setTimeout(processNotifQueue,400); }
+function closeNotif(){$('notif-modal').classList.remove('active');notifShowing=false;setTimeout(processNotifQueue,400);}
 
-const RecorderManager = {
+/* 錄音 */
+const RecorderManager={
   instances:{},
-  create(id, onSend){
-    if(this.instances[id]) return this.instances[id];
+  create(id,onSend){
+    if(this.instances[id])return this.instances[id];
     let mr=null,stream=null,chunks=[],timer=null,sec=0,isRec=false;
     const self={id};
     self.start=()=>{
-      if(isRec) return; isRec=true;
+      if(isRec)return;isRec=true;
       navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
         stream=s;
-        try{ mr=new MediaRecorder(s,{audioBitsPerSecond:24000,mimeType:'audio/webm;codecs=opus'}); }
-        catch(e){ mr=new MediaRecorder(s,{audioBitsPerSecond:24000}); }
-        chunks=[]; mr.ondataavailable=e=>chunks.push(e.data); mr.start(); sec=0;
-        const st=$(id+'-rec-status'); if(st) st.style.display='flex';
-        const tm=$(id+'-rec-time'); if(tm) tm.textContent='0';
-        timer=setInterval(()=>{ sec++; if(tm) tm.textContent=sec; if(sec>=30) self.stop(); },1000);
-      }).catch(()=>{ toast('❌ 無法開啟咪高峰'); isRec=false; });
+        try{mr=new MediaRecorder(s,{audioBitsPerSecond:24000,mimeType:'audio/webm;codecs=opus'});}
+        catch(e){mr=new MediaRecorder(s,{audioBitsPerSecond:24000});}
+        chunks=[];mr.ondataavailable=e=>chunks.push(e.data);mr.start();sec=0;
+        const st=$(id+'-rec-status');if(st)st.style.display='flex';
+        const tm=$(id+'-rec-time');if(tm)tm.textContent='0';
+        timer=setInterval(()=>{sec++;if(tm)tm.textContent=sec;if(sec>=30)self.stop();},1000);
+      }).catch(()=>{toast('❌ 無法開啟咪高峰');isRec=false;});
     };
     self.stop=()=>{
-      if(!isRec) return; isRec=false;
-      if(timer){ clearInterval(timer); timer=null; }
+      if(!isRec)return;isRec=false;
+      if(timer){clearInterval(timer);timer=null;}
       if(mr&&mr.state==='recording'){
         mr.onstop=()=>{
           const blob=new Blob(chunks,{type:'audio/webm'});
           const reader=new FileReader();
-          reader.onload=()=>{ if(onSend) onSend(reader.result.split(',')[1]); };
+          reader.onload=()=>{if(onSend)onSend(reader.result.split(',')[1]);};
           reader.readAsDataURL(blob);
-          if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+          if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
         };
         mr.stop();
       }
-      const st=$(id+'-rec-status'); if(st) st.style.display='none';
+      const st=$(id+'-rec-status');if(st)st.style.display='none';
     };
     self.cancel=()=>{
-      if(!isRec) return; isRec=false;
-      if(timer){ clearInterval(timer); timer=null; }
-      if(mr&&mr.state==='recording') mr.stop();
-      if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
-      const st=$(id+'-rec-status'); if(st) st.style.display='none';
+      if(!isRec)return;isRec=false;
+      if(timer){clearInterval(timer);timer=null;}
+      if(mr&&mr.state==='recording')mr.stop();
+      if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+      const st=$(id+'-rec-status');if(st)st.style.display='none';
       toast('❌ 錄音已取消');
     };
     self.isRecording=()=>isRec;
-    this.instances[id]=self; return self;
+    this.instances[id]=self;return self;
   },
-  get(id){ return this.instances[id]; }
+  get(id){return this.instances[id];}
 };
-function playAudio(b64){ if(!b64) return; try{ const a=new Audio('data:audio/webm;base64,'+b64); a.volume=1; a.play().catch(()=>{}); }catch(e){} }
+function playAudio(b64){if(!b64)return;try{const a=new Audio('data:audio/webm;base64,'+b64);a.volume=1;a.play().catch(()=>{});}catch(e){}}
 
-function isSuperAdminEmail(email){ return SUPER_ADMIN_EMAILS.some(x=>x.toLowerCase()===String(email||'').toLowerCase()); }
+function isSuperAdminEmail(email){return SUPER_ADMIN_EMAILS.some(x=>x.toLowerCase()===String(email||'').toLowerCase());}
 
 async function doLogin(){
   const id=$('login-id').value.trim();
-  if(!id){ $('login-err').textContent='請輸入電話或電郵'; return; }
+  if(!id){$('login-err').textContent='請輸入電話或電郵';return;}
   $('login-err').textContent='登入中...';
   try{
     await auth.signInAnonymously();
     const uid=auth.currentUser.uid;
     let role='driver';
-    if(isSuperAdminEmail(id)) role='admin';
+    if(isSuperAdminEmail(id))role='admin';
     try{
       const a=await db.ref('admins').orderByChild('identifier').equalTo(id).once('value');
-      if(a.exists()) role='admin';
+      if(a.exists())role='admin';
     }catch(e){}
     currentUser={uid,identifier:id,role};
     await db.ref('users/'+uid).set({identifier:id,role,lastLogin:now()});
     isAdmin=(role==='admin');
     $('login-view').style.display='none';
     $('main-view').style.display='block';
-    if(isAdmin) $('tab-admin').style.display='inline-block';
+    if(isAdmin)$('tab-admin').style.display='inline-block';
     toast('✅ 登入成功：'+id);
     speak('司機登入成功');
     initDriver();
-  }catch(e){ $('login-err').textContent='登入失敗：'+e.message; }
+  }catch(e){$('login-err').textContent='登入失敗：'+e.message;}
 }
 
+let initialized=false;
 function initDriver(){
+  if(initialized)return;
+  initialized=true;
   const saved=localStorage.getItem('driver_plate_'+currentUser.identifier);
-  if(saved){ driverData.plate=saved; $('plate-input').value=saved; }
+  if(saved){driverData.plate=saved;$('plate-input').value=saved;}
   updateUI();
-  if(driverData.plate) attachBusListener();
+  if(driverData.plate)attachBusListener();
   loadShiftClaims();
-  startBookingListener();
+  startBookingListener();  // 修復：用 notifiedIds 集合
   startMsgListener();
   startWalkieListener();
-  if(isAdmin) startAdminListeners();
+  if(isAdmin)startAdminListeners();
 }
 
 function attachBusListener(){
-  if(busRef){ try{busRef.off();}catch(e){} }
-  if(!driverData.plate) return;
+  if(busRef){try{busRef.off();}catch(e){}}
+  if(!driverData.plate)return;
   busRef=db.ref('van/active_buses/'+driverData.plate);
   busRef.on('value',s=>{
     const d=s.val();
@@ -463,16 +462,16 @@ function attachBusListener(){
 
 function setPlate(){
   const p=$('plate-input').value.trim().toUpperCase();
-  if(!p){ toast('請輸入車牌'); return; }
-  if(driverData.isActive){ toast('請先停止當值'); return; }
+  if(!p){toast('請輸入車牌');return;}
+  if(driverData.isActive){toast('請先停止當值');return;}
   driverData.plate=p;
   localStorage.setItem('driver_plate_'+currentUser.identifier,p);
-  attachBusListener(); updateUI(); renderShiftList();
+  attachBusListener();updateUI();renderShiftList();renderSeatView();
   toast('✅ 車牌已設定：'+p);
   speak('車牌已設定');
 }
 
-function getRoute(){ return driverData.direction===0 ? ROUTES[driverData.mode].go.name : ROUTES[driverData.mode].back.name; }
+function getRoute(){return driverData.direction===0?ROUTES[driverData.mode].go.name:ROUTES[driverData.mode].back.name;}
 function updateUI(){
   const route=getRoute();
   const idx=driverData.stationIndex||0;
@@ -489,7 +488,7 @@ function updateUI(){
   $('stop-duty-btn').style.display=driverData.isActive?'block':'none';
 }
 function updateDB(){
-  if(!driverData.plate) return;
+  if(!driverData.plate)return;
   const route=getRoute();
   const idx=driverData.stationIndex||0;
   db.ref('van/active_buses/'+driverData.plate).update({
@@ -502,49 +501,49 @@ function updateDB(){
   updateUI();
 }
 function startDuty(){
-  if(!driverData.plate){ toast('請先設定車牌'); return; }
-  driverData.isActive=true; driverData.stationIndex=0; driverData.passengerCount=0; driverData.isFull=false;
-  updateDB(); toast('🟢 已開始當值'); speak('開始當值');
+  if(!driverData.plate){toast('請先設定車牌');return;}
+  driverData.isActive=true;driverData.stationIndex=0;driverData.passengerCount=0;driverData.isFull=false;
+  updateDB();toast('🟢 已開始當值');speak('開始當值');
 }
 function stopDuty(){
-  if(!confirm('確定停止當值？')) return;
+  if(!confirm('確定停止當值？'))return;
   driverData.isActive=false;
-  if(driverData.plate) db.ref('van/active_buses/'+driverData.plate).remove().catch(()=>{});
-  updateUI(); toast('🔴 已停止當值'); speak('已停止當值');
+  if(driverData.plate)db.ref('van/active_buses/'+driverData.plate).remove().catch(()=>{});
+  updateUI();toast('🔴 已停止當值');speak('已停止當值');
 }
 function nextStation(){
-  if(!driverData.isActive){ toast('請先開始當值'); return; }
+  if(!driverData.isActive){toast('請先開始當值');return;}
   const route=getRoute();
-  if(driverData.stationIndex<route.length-1) driverData.stationIndex++;
-  else{ driverData.direction=driverData.direction===0?1:0; driverData.stationIndex=0; driverData.passengerCount=0; }
+  if(driverData.stationIndex<route.length-1)driverData.stationIndex++;
+  else{driverData.direction=driverData.direction===0?1:0;driverData.stationIndex=0;driverData.passengerCount=0;}
   updateDB();
   const r=getRoute();
   speak('到達 '+r[driverData.stationIndex]+(r[driverData.stationIndex+1]?'。下一站 '+r[driverData.stationIndex+1]:''));
 }
 function prevStation(){
-  if(!driverData.isActive){ toast('請先開始當值'); return; }
-  if(driverData.stationIndex>0) driverData.stationIndex--;
-  else{ driverData.direction=driverData.direction===0?1:0; driverData.stationIndex=getRoute().length-1; }
+  if(!driverData.isActive){toast('請先開始當值');return;}
+  if(driverData.stationIndex>0)driverData.stationIndex--;
+  else{driverData.direction=driverData.direction===0?1:0;driverData.stationIndex=getRoute().length-1;}
   updateDB();
 }
 function switchDir(){
-  if(!driverData.isActive){ toast('請先開始當值'); return; }
-  driverData.direction=driverData.direction===0?1:0; driverData.stationIndex=0;
-  updateDB(); speak('已調頭');
+  if(!driverData.isActive){toast('請先開始當值');return;}
+  driverData.direction=driverData.direction===0?1:0;driverData.stationIndex=0;
+  updateDB();speak('已調頭');
 }
 function addPass(){
-  if(!driverData.isActive) return;
-  if(driverData.passengerCount>=driverData.carSeats) return toast('已達上限');
+  if(!driverData.isActive)return;
+  if(driverData.passengerCount>=driverData.carSeats)return toast('已達上限');
   driverData.passengerCount++;
-  if(driverData.passengerCount===driverData.carSeats) driverData.isFull=true;
+  if(driverData.passengerCount===driverData.carSeats)driverData.isFull=true;
   updateDB();
 }
 function subPass(){
-  if(!driverData.isActive) return;
-  if(driverData.passengerCount>0){ driverData.passengerCount--; if(driverData.passengerCount<driverData.carSeats) driverData.isFull=false; updateDB(); }
+  if(!driverData.isActive)return;
+  if(driverData.passengerCount>0){driverData.passengerCount--;if(driverData.passengerCount<driverData.carSeats)driverData.isFull=false;updateDB();}
 }
 function toggleFull(){
-  if(!driverData.isActive) return;
+  if(!driverData.isActive)return;
   driverData.isFull=!driverData.isFull;
   driverData.passengerCount=driverData.isFull?driverData.carSeats:Math.max(0,driverData.carSeats-1);
   updateDB();
@@ -552,13 +551,13 @@ function toggleFull(){
 
 /* 班次認領 */
 function loadShiftClaims(){
-  if(shiftRef){ try{shiftRef.off();}catch(e){} }
+  if(shiftRef){try{shiftRef.off();}catch(e){}}
   shiftRef=db.ref('booking_seats/'+getToday());
-  shiftRef.on('value',snap=>{ claimsCache=snap.val()||{}; renderShiftList(); renderSeatView(); });
+  shiftRef.on('value',snap=>{claimsCache=snap.val()||{};renderShiftList();renderSeatView();});
 }
 function renderShiftList(){
-  $('shift-morning').innerHTML = SM.map(tm=>renderShiftCard(tm)).join('');
-  $('shift-evening').innerHTML = SE.map(tm=>renderShiftCard(tm)).join('');
+  $('shift-morning').innerHTML=SM.map(tm=>renderShiftCard(tm)).join('');
+  $('shift-evening').innerHTML=SE.map(tm=>renderShiftCard(tm)).join('');
 }
 function renderShiftCard(tm){
   const hhmm=tm.replace(':','');
@@ -568,47 +567,47 @@ function renderShiftCard(tm){
   const isOther=plate&&!isMine;
   const cls=isMine?'mine':isOther?'other':'';
   let tag;
-  if(isMine) tag='<span class="plate-tag mine">✅ 你認領中：'+esc(plate)+'</span>';
-  else if(isOther) tag='<span class="plate-tag taken">🚐 已被 '+esc(plate)+' 認領</span>';
+  if(isMine)tag='<span class="plate-tag mine">✅ 你認領中：'+esc(plate)+'</span>';
+  else if(isOther)tag='<span class="plate-tag taken">🚐 已被 '+esc(plate)+' 認領</span>';
   else tag='<span class="plate-tag">⚪ 未認領</span>';
   let btn='';
-  if(!driverData.plate) btn='<button class="btn btn-secondary btn-sm" disabled style="width:100%">請先設車牌</button>';
-  else if(isMine) btn='<button class="btn btn-danger btn-sm" onclick="unclaimShift(\''+tm+'\')" style="width:100%">取消認領</button>';
-  else if(isOther) btn='<button class="btn btn-secondary btn-sm" disabled style="width:100%">已被佔用</button>';
+  if(!driverData.plate)btn='<button class="btn btn-secondary btn-sm" disabled style="width:100%">請先設車牌</button>';
+  else if(isMine)btn='<button class="btn btn-danger btn-sm" onclick="unclaimShift(\''+tm+'\')" style="width:100%">取消認領</button>';
+  else if(isOther)btn='<button class="btn btn-secondary btn-sm" disabled style="width:100%">已被佔用</button>';
   else btn='<button class="btn btn-gold btn-sm" onclick="claimShift(\''+tm+'\')" style="width:100%">認領</button>';
   return '<div class="shift-card '+cls+'"><div><div class="time">'+tm+'</div><div class="origin">'+getOrigL(tm)+'</div>'+tag+'</div><div style="min-width:110px">'+btn+'</div></div>';
 }
 async function claimShift(tm){
-  if(!driverData.plate){ toast('請先設定車牌'); return; }
+  if(!driverData.plate){toast('請先設定車牌');return;}
   const hhmm=tm.replace(':','');
   const cur=claimsCache[hhmm]||{};
-  if(cur.plate&&cur.plate!==driverData.plate){ toast('❌ 已被 '+cur.plate+' 認領'); return; }
-  if(!confirm('確認認領 '+tm+' 班次（車牌 '+driverData.plate+'）？')) return;
+  if(cur.plate&&cur.plate!==driverData.plate){toast('❌ 已被 '+cur.plate+' 認領');return;}
+  if(!confirm('確認認領 '+tm+' 班次（車牌 '+driverData.plate+'）？'))return;
   try{
     await db.ref('booking_seats/'+getToday()+'/'+hhmm).update({
       plate:driverData.plate,quota:16,seats:16,
       driverUid:currentUser.uid,driverName:currentUser.identifier,claimedAt:now()
     });
-    toast('✅ 已認領 '+tm+' 班次'); speak('已認領 '+tm+' 班次');
-  }catch(e){ toast('❌ '+e.message); }
+    toast('✅ 已認領 '+tm+' 班次');speak('已認領 '+tm+' 班次');
+  }catch(e){toast('❌ '+e.message);}
 }
 async function unclaimShift(tm){
-  if(!confirm('確定取消認領 '+tm+' 班次？')) return;
+  if(!confirm('確定取消認領 '+tm+' 班次？'))return;
   try{
     const hhmm=tm.replace(':','');
     const cur=await db.ref('booking_seats/'+getToday()+'/'+hhmm+'/plate').once('value');
-    if(cur.val()!==driverData.plate){ toast('❌ 車牌不符'); return; }
+    if(cur.val()!==driverData.plate){toast('❌ 車牌不符');return;}
     await db.ref('booking_seats/'+getToday()+'/'+hhmm+'/plate').remove();
     toast('已取消認領');
-  }catch(e){ toast('❌ '+e.message); }
+  }catch(e){toast('❌ '+e.message);}
 }
 
-/* 座位視圖（重點） */
+/* 座位視圖 */
 function renderSeatView(){
   const sel=$('seat-shift-select');
   const view=$('seat-view');
-  if(!driverData.plate){ sel.innerHTML='<option>請先設定車牌</option>'; view.innerHTML=''; return; }
-  const myShifts=SM.concat(SE).filter(tm=>{ const c=claimsCache[tm.replace(':','')]; return c&&c.plate===driverData.plate; });
+  if(!driverData.plate){sel.innerHTML='<option>請先設定車牌</option>';view.innerHTML='';return;}
+  const myShifts=SM.concat(SE).filter(tm=>{const c=claimsCache[tm.replace(':','')];return c&&c.plate===driverData.plate;});
   if(!myShifts.length){
     sel.innerHTML='<option value="">-- 你未認領任何班次 --</option>';
     view.innerHTML='<div style="text-align:center;color:var(--txt2);padding:16px;font-size:13px">請先到「班次認領」認領你負責嘅班次</div>';
@@ -618,92 +617,162 @@ function renderSeatView(){
   sel.innerHTML=myShifts.map(tm=>'<option value="'+tm+'"'+(tm===cur?' selected':'')+'>'+tm+' · '+getOrigL(tm)+'</option>').join('');
   const tm=sel.value||myShifts[0];
   const sid=getSid(getToday(),tm);
-  const today=getToday();
   const items=Object.values(bookingsCache).filter(b=>b&&b.scheduleId===sid&&(b.status==='pending'||b.status==='reserved'||b.status==='boarded'));
   const confirmed=items.filter(b=>b.status==='reserved'||b.status==='boarded');
   const pending=items.filter(b=>b.status==='pending');
   const totalBooked=confirmed.reduce((s,b)=>s+(b.seats||1),0);
   const remaining=16-totalBooked;
-  // 座位格子
   let seats=[];
   let idx=1;
   confirmed.forEach(b=>{
     for(let i=0;i<(b.seats||1);i++){
-      if(idx<=16) seats.push({num:idx, name:b.passengerName, phone:b.passengerPhone, status:b.status});
+      if(idx<=16)seats.push({num:idx,name:b.passengerName,status:b.status});
       idx++;
     }
   });
-  while(seats.length<16) seats.push({num:seats.length+1, name:null, status:'empty'});
+  while(seats.length<16)seats.push({num:seats.length+1,name:null,status:'empty'});
 
   let h='';
   h+='<div class="row" style="margin-bottom:12px">';
-  h+='<div class="stat-box"><div class="label">班次時間</div><div class="value" style="font-size:16px">'+tm+'</div></div>';
+  h+='<div class="stat-box"><div class="label">班次</div><div class="value" style="font-size:16px">'+tm+'</div></div>';
   h+='<div class="stat-box"><div class="label">已留位</div><div class="value">'+totalBooked+'</div></div>';
   h+='<div class="stat-box"><div class="label">剩餘</div><div class="value" style="color:'+(remaining>0?'#86efac':'#fca5a5')+'">'+remaining+'</div></div>';
   h+='</div>';
   if(pending.length){
-    h+='<div style="background:rgba(251,191,36,.08);border-left:3px solid var(--yellow);padding:10px;border-radius:8px;margin-bottom:10px"><div style="font-size:13px;font-weight:700;color:var(--yellow)">⏳ 有 '+pending.length+' 位待確認</div><div style="font-size:12px;color:var(--txt2);margin-top:4px">請到「留位審核」處理</div></div>';
+    h+='<div style="background:rgba(251,191,36,.08);border-left:3px solid var(--yellow);padding:10px;border-radius:8px;margin-bottom:10px"><div style="font-size:13px;font-weight:700;color:var(--yellow)">⏳ 有 '+pending.length+' 位待確認</div></div>';
+    pending.forEach(b=>{
+      h+='<div class="pending-item"><div class="name">'+esc(b.passengerName)+' ('+(b.seats||1)+'位)</div>';
+      h+='<div class="info">📞 '+esc(b.passengerPhone)+'</div>';
+      if(b.pickupLocation)h+='<div class="info" style="color:var(--green)">📍 '+esc(b.pickupLocation)+'</div>';
+      h+='<div class="actions"><button style="background:linear-gradient(135deg,#16a34a,#15803d)" onclick="confirmBooking(\''+b.date+'\',\''+b.id+'\')">✅ 確認</button><button style="background:linear-gradient(135deg,#dc2626,#991b1b)" onclick="rejectBooking(\''+b.date+'\',\''+b.id+'\')">❌ 拒絕</button></div></div>';
+    });
   }
   h+='<div style="font-size:12px;color:var(--txt2);margin-top:6px">🚐 座位圖（'+totalBooked+' / 16）</div>';
   h+='<div class="seat-grid">';
   seats.forEach(s=>{
-    if(s.status==='empty'){
-      h+='<div class="seat empty"><div class="num">'+s.num+'</div><div style="font-size:9px">空</div></div>';
-    } else {
-      const cls=s.status==='boarded'?'taken':'taken';
-      h+='<div class="seat '+cls+'"><div class="num">'+s.num+'</div><div class="nm">'+esc(s.name)+'</div></div>';
-    }
+    if(s.status==='empty')h+='<div class="seat empty"><div class="num">'+s.num+'</div><div style="font-size:9px">空</div></div>';
+    else h+='<div class="seat taken"><div class="num">'+s.num+'</div><div class="nm">'+esc(s.name)+'</div></div>';
   });
   h+='</div>';
   view.innerHTML=h;
 }
 
-/* 留位審核監聽 */
+/* 循環線留位渲染（修復） */
+function renderLoopBookings(){
+  const c=$('loop-bookings');
+  if(!c)return;
+  const lp=Object.entries(loopCache).filter(([k,x])=>x&&x.status==='pending');
+  const lr=Object.entries(loopCache).filter(([k,x])=>x&&x.status==='reserved');
+  $('loop-pending-count').textContent=lp.length+' 待確認';
+  let h='';
+  if(!lp.length&&!lr.length){c.innerHTML='<div style="text-align:center;color:var(--txt2);padding:16px;font-size:13px">暫無循環線留位</div>';return;}
+  lp.forEach(([id,x])=>{
+    h+='<div class="pending-item"><div class="name">'+esc(x.name)+'</div>';
+    h+='<div class="info">📞 '+esc(x.phone)+'</div>';
+    if(x.pickupLocation)h+='<div class="info" style="color:var(--green)">📍 '+esc(x.pickupLocation)+'</div>';
+    h+='<div class="actions"><button style="background:linear-gradient(135deg,#16a34a,#15803d)" onclick="confirmLoop(\''+id+'\')">✅ 確認</button><button style="background:linear-gradient(135deg,#dc2626,#991b1b)" onclick="rejectLoop(\''+id+'\')">❌ 拒絕</button></div></div>';
+  });
+  lr.forEach(([id,x])=>{
+    h+='<div class="loop-item"><div style="font-weight:700;color:#fff">'+esc(x.name)+'</div><div style="font-size:12px;color:var(--txt2)">📞 '+esc(x.phone)+'</div>';
+    if(x.pickupLocation)h+='<div style="font-size:12px;color:var(--green)">📍 '+esc(x.pickupLocation)+'</div>';
+    if(x.confirmedBy)h+='<div style="font-size:12px;color:var(--gold-b)">🚐 車牌：'+esc(x.confirmedBy)+'</div>';
+    h+='</div>';
+  });
+  c.innerHTML=h;
+}
+
+/* 留位監聽（修復核心） */
 function startBookingListener(){
   const t=getToday();
-  if(bookingRef){ try{bookingRef.off();}catch(e){} }
+  if(bookingRef){try{bookingRef.off();}catch(e){}}
   bookingRef=db.ref('booking/'+t);
   bookingRef.on('value',snap=>{
     const ab=snap.val()||{};
-    if(!firstBookingLoad){
-      let newPending=0, newBoarded=0;
-      Object.keys(ab).forEach(k=>{
-        const b=ab[k];
-        if(!knownBookingIds.has(k)){
-          if(b&&b.status==='pending') newPending++;
-        } else if(b&&b.status==='boarded'&&!knownBoardedIds.has(k)) newBoarded++;
-      });
-      if(newPending>0) showNotif('🔔 有 '+newPending+' 位乘客留位！','<div>請到「留位總覽」確認座位</div>','有 '+newPending+' 位乘客留位');
-      if(newBoarded>0) showNotif('🚐 有乘客已上車','乘客已確認上車。','有乘客已上車');
+    let newPending=0;
+    const newIds=[];
+    Object.keys(ab).forEach(k=>{
+      const b=ab[k];
+      if(b&&b.status==='pending'&&!notifiedBookingIds.has(k)){
+        newPending++;newIds.push(k);
+      }
+    });
+    if(newPending>0){
+      newIds.forEach(k=>notifiedBookingIds.add(k));
+      showNotif('🔔 有 '+newPending+' 位乘客留位！','<div>請到「留位總覽」確認座位</div>','有 '+newPending+' 位乘客留位');
     }
-    knownBookingIds=new Set(Object.keys(ab));
-    knownBoardedIds=new Set(Object.keys(ab).filter(k=>ab[k]&&ab[k].status==='boarded'));
-    firstBookingLoad=false;
+    // 檢測已上車
+    Object.keys(ab).forEach(k=>{
+      const b=ab[k];
+      if(b&&b.status==='boarded'&&!notifiedBookingIds.has('boarded_'+k)){
+        notifiedBookingIds.add('boarded_'+k);
+        showNotif('🚐 有乘客已上車','乘客已確認上車。','有乘客已上車');
+      }
+    });
     bookingsCache=ab;
     renderSeatView();
   });
-  db.ref('booking_loop/'+t).on('value',s=>{ loopCache=s.val()||{}; });
+
+  if(loopRef){try{loopRef.off();}catch(e){}}
+  loopRef=db.ref('booking_loop/'+t);
+  loopRef.on('value',snap=>{
+    const ab=snap.val()||{};
+    let newLoopPending=0;
+    const newLoopIds=[];
+    Object.keys(ab).forEach(k=>{
+      const b=ab[k];
+      if(b&&b.status==='pending'&&!notifiedLoopIds.has(k)){
+        newLoopPending++;newLoopIds.push(k);
+      }
+    });
+    if(newLoopPending>0){
+      newLoopIds.forEach(k=>notifiedLoopIds.add(k));
+      showNotif('🔄 有 '+newLoopPending+' 位循環線留位！','<div>請到「留位總覽」下方循環線區域確認</div>','有 '+newLoopPending+' 位循環線留位');
+    }
+    loopCache=ab;
+    renderLoopBookings();
+  });
+}
+
+async function confirmBooking(date,id){
+  try{
+    await db.ref('booking/'+date+'/'+id).update({status:'reserved',confirmedAt:now(),confirmedBy:driverData.plate||currentUser.identifier});
+    toast('✅ 已確認留位');speak('留位已確認');
+  }catch(e){toast('❌ '+e.message);}
+}
+async function rejectBooking(date,id){
+  if(!confirm('確定拒絕此留位？'))return;
+  try{await db.ref('booking/'+date+'/'+id).update({status:'rejected',rejectedAt:now()});toast('已拒絕');}
+  catch(e){toast('❌ '+e.message);}
+}
+async function confirmLoop(id){
+  try{
+    await db.ref('booking_loop/'+getToday()+'/'+id).update({status:'reserved',confirmedAt:now(),confirmedBy:driverData.plate||currentUser.identifier});
+    toast('✅ 已確認');speak('循環線留位已確認');
+  }catch(e){toast('❌ '+e.message);}
+}
+async function rejectLoop(id){
+  if(!confirm('確定拒絕？'))return;
+  try{await db.ref('booking_loop/'+getToday()+'/'+id).update({status:'rejected',rejectedAt:now()});toast('已拒絕');}
+  catch(e){toast('❌ '+e.message);}
 }
 
 /* 訊息 */
 function startMsgListener(){
-  if(msgRef){ try{msgRef.off();}catch(e){} }
+  if(msgRef){try{msgRef.off();}catch(e){}}
   msgRef=db.ref('van/messages').orderByChild('timestamp').limitToLast(60);
   msgRef.on('value',snap=>{
     const items=[];
-    snap.forEach(c=>{ const m=c.val(); if(!m.hidden) items.push({key:c.key,msg:m}); });
-    if(!firstMsgLoad){
-      let newIn=0;
-      items.forEach(it=>{
-        const m=it.msg;
-        if(!knownMsgKeys.has(it.key)&&m.senderUid!==currentUser.uid){
-          if(!m.busId||m.busId===driverData.plate||driverData.isActive) newIn++;
+    snap.forEach(c=>{const m=c.val();if(!m.hidden)items.push({key:c.key,msg:m});});
+    let newIn=0;
+    items.forEach(it=>{
+      const m=it.msg;
+      if(!notifiedMsgKeys.has(it.key)&&m.senderUid!==currentUser.uid){
+        if(!m.busId||m.busId===driverData.plate||driverData.isActive){
+          newIn++;notifiedMsgKeys.add(it.key);
         }
-      });
-      if(newIn>0) showNotif('💬 收到 '+newIn+' 條新訊息','請到「訊息」查看','收到新訊息');
-    }
-    knownMsgKeys=new Set(items.map(x=>x.key));
-    firstMsgLoad=false;
+      }
+    });
+    if(newIn>0)showNotif('💬 收到 '+newIn+' 條新訊息','請到「訊息」查看','收到新訊息');
     renderMsgs(items);
   });
 }
@@ -717,54 +786,44 @@ function renderMsgs(items){
     h+='<div class="msg-row">';
     h+='<span style="color:var(--txt2);font-size:11px">'+time+'</span>';
     h+='<span style="color:'+(isMine?'var(--gold-b)':'var(--yellow)')+';font-weight:700">'+esc(m.senderIdentifier||'?')+'</span>';
-    if(m.audio) h+='<button class="play-audio" onclick="playAudio(\''+m.audio+'\')">▶ 語音</button>';
+    if(m.audio)h+='<button class="play-audio" onclick="playAudio(\''+m.audio+'\')">▶ 語音</button>';
     else h+='<span>'+esc(m.text||'')+'</span>';
     h+='</div>';
   });
   $('msg-list').innerHTML=h||'<div style="color:var(--txt2);text-align:center;padding:8px;font-size:13px">暫無訊息</div>';
 }
 async function sendMsg(){
-  const i=$('msg-input'); const text=i.value.trim();
-  if(!text) return;
-  await db.ref('van/messages').push({
-    busId:driverData.plate||'broadcast',senderUid:currentUser.uid,
-    senderIdentifier:currentUser.identifier,text,timestamp:now(),type:'text'
-  });
-  i.value=''; toast('已發送');
+  const i=$('msg-input');const text=i.value.trim();
+  if(!text)return;
+  await db.ref('van/messages').push({busId:driverData.plate||'broadcast',senderUid:currentUser.uid,senderIdentifier:currentUser.identifier,text,timestamp:now(),type:'text'});
+  i.value='';toast('已發送');
 }
 function setupMsgRecorder(){
   RecorderManager.create('msg',b64=>{
-    db.ref('van/messages').push({
-      busId:driverData.plate||'broadcast',senderUid:currentUser.uid,
-      senderIdentifier:currentUser.identifier,audio:b64,timestamp:now(),type:'audio'
-    }).then(()=>toast('✅ 語音已發送'));
+    db.ref('van/messages').push({busId:driverData.plate||'broadcast',senderUid:currentUser.uid,senderIdentifier:currentUser.identifier,audio:b64,timestamp:now(),type:'audio'}).then(()=>toast('✅ 語音已發送'));
   });
   $('btn-msg-record').addEventListener('click',()=>{
-    const rec=RecorderManager.get('msg'); if(rec.isRecording()) return;
-    rec.start(); $('msg-record-controls').style.display='flex'; $('btn-msg-record').style.display='none';
+    const rec=RecorderManager.get('msg');if(rec.isRecording())return;
+    rec.start();$('msg-record-controls').style.display='flex';$('btn-msg-record').style.display='none';
   });
 }
-function stopMsgRecord(){ const rec=RecorderManager.get('msg'); if(rec&&rec.isRecording()) rec.stop(); $('msg-record-controls').style.display='none'; $('btn-msg-record').style.display='block'; }
-function cancelMsgRecord(){ const rec=RecorderManager.get('msg'); if(rec&&rec.isRecording()) rec.cancel(); $('msg-record-controls').style.display='none'; $('btn-msg-record').style.display='block'; }
+function stopMsgRecord(){const rec=RecorderManager.get('msg');if(rec&&rec.isRecording())rec.stop();$('msg-record-controls').style.display='none';$('btn-msg-record').style.display='block';}
+function cancelMsgRecord(){const rec=RecorderManager.get('msg');if(rec&&rec.isRecording())rec.cancel();$('msg-record-controls').style.display='none';$('btn-msg-record').style.display='block';}
 
 /* 對講機 */
 function startWalkieListener(){
-  if(walkieRef){ try{walkieRef.off();}catch(e){} }
+  if(walkieRef){try{walkieRef.off();}catch(e){}}
   walkieRef=db.ref('van/walkie_talkie').orderByChild('timestamp').limitToLast(40);
   walkieRef.on('value',snap=>{
-    const items=[]; snap.forEach(c=>items.push({key:c.key,msg:c.val()}));
-    if(!firstWalkieLoad){
-      let newIn=0;
-      items.forEach(it=>{
-        const m=it.msg;
-        if(!knownWalkieKeys.has(it.key)&&m.senderUid!==currentUser.uid){
-          if(m.target==='all'||m.target===driverData.plate) newIn++;
-        }
-      });
-      if(newIn>0) showNotif('🎙️ 收到 '+newIn+' 條對講機訊息','請到「對講機」查看','收到對講機訊息');
-    }
-    knownWalkieKeys=new Set(items.map(x=>x.key));
-    firstWalkieLoad=false;
+    const items=[];snap.forEach(c=>items.push({key:c.key,msg:c.val()}));
+    let newIn=0;
+    items.forEach(it=>{
+      const m=it.msg;
+      if(!notifiedWalkieKeys.has(it.key)&&m.senderUid!==currentUser.uid){
+        if(m.target==='all'||m.target===driverData.plate){newIn++;notifiedWalkieKeys.add(it.key);}
+      }
+    });
+    if(newIn>0)showNotif('🎙️ 收到 '+newIn+' 條對講機訊息','請到「對講機」查看','收到對講機訊息');
     renderWalkie(items);
   });
 }
@@ -777,7 +836,7 @@ function renderWalkie(items){
     h+='<div class="msg-row">';
     h+='<span style="color:var(--txt2);font-size:11px">'+time+'</span>';
     h+='<span style="color:var(--gold-b);font-weight:700">'+esc(m.senderPlate||'?')+'</span>';
-    if(m.audio) h+='<button class="play-audio" onclick="playAudio(\''+m.audio+'\')">▶ 語音</button>';
+    if(m.audio)h+='<button class="play-audio" onclick="playAudio(\''+m.audio+'\')">▶ 語音</button>';
     else h+='<span>'+esc(m.text||'')+'</span>';
     h+='</div>';
   });
@@ -786,57 +845,51 @@ function renderWalkie(items){
 function setupWalkieRecorder(){
   RecorderManager.create('walkie',b64=>{
     const target=$('walkie-target').value||'all';
-    if(!driverData.plate) return toast('請先設定車牌');
-    db.ref('van/walkie_talkie').push({
-      senderUid:currentUser.uid,senderIdentifier:currentUser.identifier,
-      senderPlate:driverData.plate,target,audio:b64,timestamp:now(),type:'walkie_audio'
-    }).then(()=>toast('✅ 對講機已發送'));
+    if(!driverData.plate)return toast('請先設定車牌');
+    db.ref('van/walkie_talkie').push({senderUid:currentUser.uid,senderIdentifier:currentUser.identifier,senderPlate:driverData.plate,target,audio:b64,timestamp:now(),type:'walkie_audio'}).then(()=>toast('✅ 對講機已發送'));
   });
   $('btn-walkie-record').addEventListener('click',()=>{
-    const rec=RecorderManager.get('walkie'); if(rec.isRecording()) return;
-    rec.start(); $('walkie-record-controls').style.display='flex'; $('btn-walkie-record').style.display='none';
+    const rec=RecorderManager.get('walkie');if(rec.isRecording())return;
+    rec.start();$('walkie-record-controls').style.display='flex';$('btn-walkie-record').style.display='none';
   });
 }
-function stopWalkieRecord(){ const rec=RecorderManager.get('walkie'); if(rec&&rec.isRecording()) rec.stop(); $('walkie-record-controls').style.display='none'; $('btn-walkie-record').style.display='block'; }
-function cancelWalkieRecord(){ const rec=RecorderManager.get('walkie'); if(rec&&rec.isRecording()) rec.cancel(); $('walkie-record-controls').style.display='none'; $('btn-walkie-record').style.display='block'; }
+function stopWalkieRecord(){const rec=RecorderManager.get('walkie');if(rec&&rec.isRecording())rec.stop();$('walkie-record-controls').style.display='none';$('btn-walkie-record').style.display='block';}
+function cancelWalkieRecord(){const rec=RecorderManager.get('walkie');if(rec&&rec.isRecording())rec.cancel();$('walkie-record-controls').style.display='none';$('btn-walkie-record').style.display='block';}
 
 /* 後台 */
 function startAdminListeners(){
   db.ref('van/active_buses').on('value',snap=>{
-    const d=snap.val()||{}; const nw=now();
+    const d=snap.val()||{};const nw=now();
     let cnt=0,pax=0,h='';
     Object.keys(d).forEach(p=>{
       const b=d[p];
-      if(nw-(b.lastUpdate||0)<300000){
-        cnt++; pax+=b.passengerCount||0;
-        h+='<div class="item">🚐 <strong>'+esc(p)+'</strong> · '+esc(b.currentStation||'')+' · 👥 '+(b.passengerCount||0)+'/'+(b.carSeats||16)+(b.isFull?' 🚫滿座':'')+'</div>';
-      }
+      if(nw-(b.lastUpdate||0)<300000){cnt++;pax+=b.passengerCount||0;h+='<div class="item">🚐 <strong>'+esc(p)+'</strong> · '+esc(b.currentStation||'')+' · 👥 '+(b.passengerCount||0)+'/'+(b.carSeats||16)+(b.isFull?' 🚫滿座':'')+'</div>';}
     });
-    $('ad-buses').textContent=cnt; $('ad-pax').textContent=pax;
+    $('ad-buses').textContent=cnt;$('ad-pax').textContent=pax;
     $('ad-bus-list').innerHTML=h||'<div class="item">暫無在線車輛</div>';
   });
   db.ref('van/messages').orderByChild('timestamp').limitToLast(10).on('value',snap=>{
     let h='';
-    snap.forEach(c=>{ const m=c.val(); const t=m.timestamp?new Date(m.timestamp).toLocaleTimeString('zh-HK'):'';
-      h='<div class="item">['+t+'] '+esc(m.senderIdentifier||'?')+' → '+esc(m.busId||'廣播')+' · '+(m.audio?'🎤 語音':esc(m.text||''))+'</div>'+h; });
+    snap.forEach(c=>{const m=c.val();const t=m.timestamp?new Date(m.timestamp).toLocaleTimeString('zh-HK'):'';
+      h='<div class="item">['+t+'] '+esc(m.senderIdentifier||'?')+' → '+esc(m.busId||'廣播')+' · '+(m.audio?'🎤 語音':esc(m.text||''))+'</div>'+h;});
     $('ad-msgs').textContent=snap.numChildren();
     $('ad-msg-list').innerHTML=h||'<div class="item">暫無訊息</div>';
   });
   db.ref('van/walkie_talkie').orderByChild('timestamp').limitToLast(10).on('value',snap=>{
     let h='';
-    snap.forEach(c=>{ const m=c.val(); const t=m.timestamp?new Date(m.timestamp).toLocaleTimeString('zh-HK'):'';
-      h='<div class="item">['+t+'] '+esc(m.senderPlate||'?')+' → '+esc(m.target||'all')+' · '+(m.audio?'🎤 語音':esc(m.text||''))+'</div>'+h; });
+    snap.forEach(c=>{const m=c.val();const t=m.timestamp?new Date(m.timestamp).toLocaleTimeString('zh-HK'):'';
+      h='<div class="item">['+t+'] '+esc(m.senderPlate||'?')+' → '+esc(m.target||'all')+' · '+(m.audio?'🎤 語音':esc(m.text||''))+'</div>'+h;});
     $('ad-walkie-list').innerHTML=h||'<div class="item">暫無對講機記錄</div>';
   });
   db.ref('bans').on('value',snap=>{
-    const d=snap.val()||{}; let h='';
-    Object.keys(d).forEach(k=>{ const b=d[k]; h+='<div class="item">🚫 '+esc(b.identifier||k)+' · '+esc(b.reason||'無原因')+'</div>'; });
+    const d=snap.val()||{};let h='';
+    Object.keys(d).forEach(k=>{const b=d[k];h+='<div class="item">🚫 '+esc(b.identifier||k)+' · '+esc(b.reason||'無原因')+'</div>';});
     $('ad-ban-list').innerHTML=h||'<div class="item">無封禁記錄</div>';
   });
   db.ref('van/announcements').orderByChild('timestamp').limitToLast(10).on('value',snap=>{
     let h='';
-    snap.forEach(c=>{ const a=c.val(); const t=new Date(a.timestamp).toLocaleString('zh-HK');
-      h='<div class="item">['+t+'] '+(a.audio?'🎤 語音':esc(a.text||''))+'</div>'+h; });
+    snap.forEach(c=>{const a=c.val();const t=new Date(a.timestamp).toLocaleString('zh-HK');
+      h='<div class="item">['+t+'] '+(a.audio?'🎤 語音':esc(a.text||''))+'</div>'+h;});
     $('ad-announce-list').innerHTML=h||'<div class="item">暫無公告</div>';
   });
   updateAdminStats();
@@ -851,9 +904,9 @@ async function updateAdminStats(){
     const claimCount=Object.keys(cl).filter(k=>cl[k]&&cl[k].plate).length;
     let pending=0,reserved=0,boarded=0;
     Object.values(bs).forEach(b=>{
-      if(b.status==='pending') pending++;
-      else if(b.status==='reserved') reserved++;
-      else if(b.status==='boarded') boarded++;
+      if(b.status==='pending')pending++;
+      else if(b.status==='reserved')reserved++;
+      else if(b.status==='boarded')boarded++;
     });
     const total=SM.length+SE.length;
     $('ad-stats').innerHTML=
@@ -871,33 +924,31 @@ async function updateAdminStats(){
   }catch(e){}
 }
 async function publishAnnounce(){
-  const i=$('ad-announce'); const text=i.value.trim();
-  if(!text) return toast('請輸入公告內容');
+  const i=$('ad-announce');const text=i.value.trim();
+  if(!text)return toast('請輸入公告內容');
   await db.ref('van/announcements').push({text,publisher:currentUser.identifier,timestamp:now()});
-  i.value=''; toast('✅ 公告已發佈');
+  i.value='';toast('✅ 公告已發佈');
 }
 
 function switchTab(t){
   ['duty','claim','seats','msg','walkie','admin'].forEach(k=>{
-    const p=$('tab-'+k); if(p) p.style.display=(k===t?'block':'none');
+    const p=$('tab-'+k);if(p)p.style.display=(k===t?'block':'none');
   });
   document.querySelectorAll('#main-tabs .tab').forEach(b=>b.classList.remove('active'));
   const idx={duty:0,claim:1,seats:2,msg:3,walkie:4,admin:5}[t];
   const btns=document.querySelectorAll('#main-tabs .tab');
-  if(btns[idx]) btns[idx].classList.add('active');
-  if(t==='seats') renderSeatView();
+  if(btns[idx])btns[idx].classList.add('active');
+  if(t==='seats'){renderSeatView();renderLoopBookings();}
 }
 
 setupMsgRecorder();
 setupWalkieRecorder();
 
 db.ref('van/active_buses').on('value',snap=>{
-  const d=snap.val()||{}; const nw=now();
+  const d=snap.val()||{};const nw=now();
   let h='<option value="all">📢 全部司機</option>';
   Object.keys(d).forEach(p=>{
-    if(p!==driverData.plate&&nw-(d[p].lastUpdate||0)<300000){
-      h+='<option value="'+esc(p)+'">🚐 '+esc(p)+'</option>';
-    }
+    if(p!==driverData.plate&&nw-(d[p].lastUpdate||0)<300000){h+='<option value="'+esc(p)+'">🚐 '+esc(p)+'</option>';}
   });
   $('walkie-target').innerHTML=h;
 });
@@ -907,19 +958,19 @@ window.addEventListener('load',()=>{
     if(u){
       const snap=await db.ref('users/'+u.uid).once('value');
       const d=snap.val();
-      if(d&&d.identifier){
+      if(d&&d.identifier&&!initialized){
         currentUser={uid:u.uid,identifier:d.identifier,role:d.role};
         isAdmin=d.role==='admin';
         $('login-view').style.display='none';
         $('main-view').style.display='block';
-        if(isAdmin) $('tab-admin').style.display='inline-block';
+        if(isAdmin)$('tab-admin').style.display='inline-block';
         initDriver();
       }
     }
   });
 });
 
-Object.assign(window,{playAudio,speakGuide,closeNotif,setPlate,startDuty,stopDuty,nextStation,prevStation,switchDir,addPass,subPass,toggleFull,claimShift,unclaimShift,sendMsg,stopMsgRecord,cancelMsgRecord,stopWalkieRecord,cancelWalkieRecord,publishAnnounce,doLogin,switchTab,renderSeatView});
+Object.assign(window,{playAudio,speakGuide,closeNotif,setPlate,startDuty,stopDuty,nextStation,prevStation,switchDir,addPass,subPass,toggleFull,claimShift,unclaimShift,confirmBooking,rejectBooking,confirmLoop,rejectLoop,sendMsg,stopMsgRecord,cancelMsgRecord,stopWalkieRecord,cancelWalkieRecord,publishAnnounce,doLogin,switchTab,renderSeatView,renderLoopBookings});
 </script>
 </body>
 </html>
